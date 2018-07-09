@@ -1,6 +1,6 @@
 {
   "name": "aqueduct",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Aqueduct: API and Socket client for ERC dEX",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",

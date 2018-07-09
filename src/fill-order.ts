@@ -58,6 +58,7 @@ export class FillOrder extends Web3EnabledService<string> {
       return txHash;
     } catch (err) {
       console.error('error filling the order');
+      console.error(err);
       throw err;
     }
   }

@@ -562,6 +562,8 @@ PendingCancel (5)
       salt: string;
       ecSignature: IEcSignature;
       remainingTakerTokenAmount: string;
+      orderHash: string;
+      source: string;
     }
 
     export interface IStandardFeeRequest {
