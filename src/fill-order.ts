@@ -27,7 +27,6 @@ export class FillOrder extends Web3EnabledService<string> {
         networkId: this.networkId
       });
     } catch (err) {
-      console.error(`couldn't find an order with hash ${this.params.orderHash}`);
       throw err;
     }
 
@@ -50,15 +49,13 @@ export class FillOrder extends Web3EnabledService<string> {
             }
           });
         } catch (err) {
-          console.error(`failed to claim txHash ${txHash}`);
-          console.error(err);
+          console.error(`failed to claim txHash ${txHash}:`, err);
         }
       }
 
       return txHash;
     } catch (err) {
-      console.error('error filling the order');
-      console.error(err);
+      console.error(`error filling the order: ${err ? err.message : 'no error object'}`, err);
       throw err;
     }
   }
