@@ -20,14 +20,14 @@ export class FillOrder extends Web3EnabledService<string> {
   }
 
   protected async run() {
-    let order: Aqueduct.Api.IStandardOrder;
+    let order: Aqueduct.Api.IStandardOrder | undefined = undefined;
     try {
       order = await new Aqueduct.Api.StandardService().getOrderByHash({
         orderHash: this.params.orderHash,
         networkId: this.networkId
       });
     } catch (err) {
-      throw err;
+      console.error(err);
     }
 
     if (!order) {
@@ -55,8 +55,8 @@ export class FillOrder extends Web3EnabledService<string> {
 
       return txHash;
     } catch (err) {
-      console.error(`error filling the order: ${err ? err.message : 'no error object'}`, err);
-      throw err;
+      console.error(err);
+      throw new Error(`error filling the order: ${err ? err.message : 'no error object'}`);
     }
   }
 }
