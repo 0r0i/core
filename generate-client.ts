@@ -318,7 +318,7 @@ export namespace Aqueduct {
           channel = channel.replace(\`:\${k}\`, params[k]);
         });
 
-        return channel;
+        return channel.toLowerCase();
       }
     }
     {{#events}}

@@ -196,142 +196,6 @@ Current status of app
       expirationDate: Date;
     }
 
-    /**
-     * An order that has been recorded on the ERC dEX Order Book
-     */
-    export interface Order {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      /**
-       * Date on which the order was closed through fill, cancel, etc
-       */
-      dateClosed?: Date;
-      /**
-       * ID of the Ethereum network the order is associated with
-       */
-      networkId: number;
-      /**
-       * 0x Exchange Contract Address
-       */
-      exchangeContractAddress: string;
-      /**
-       * Unix timestamp of order expiration (in seconds)
-       */
-      expirationUnixTimestampSec: number;
-      /**
-       * Address of the fee recipient
-       */
-      feeRecipient: string;
-      /**
-       * Address of the order maker
-       */
-      maker: string;
-      /**
-       * Fee due from maker on order fill
-       */
-      makerFee: string;
-      /**
-       * Token address of the maker token
-       */
-      makerTokenAddress: string;
-      /**
-       * Total amount of maker token in order
-       */
-      makerTokenAmount: string;
-      /**
-       * Secure salt
-       */
-      salt: string;
-      /**
-       * Serialized version of the EC signature for signed orders
-       */
-      serializedEcSignature: string;
-      /**
-       * Taker address; generally a null taker
-       */
-      taker: string;
-      /**
-       * Fee due from taker on order fill
-       */
-      takerFee: string;
-      /**
-       * Token address of the taker token
-       */
-      takerTokenAddress: string;
-      /**
-       * Total amount of taker token in order
-       */
-      takerTokenAmount: string;
-      /**
-       * Remaining amount in the order in terms of taker token units
-       */
-      remainingTakerTokenAmount: string;
-      /**
-       * The hash of the signed order
-       */
-      orderHash: string;
-      /**
-       * Account ID of originator
-       */
-      accountId?: number;
-      /**
-       * State of the order: Open (0), Canceled (1),
-Filled (2), Expired(3), Removed(4),
-PendingCancel (5)
-       */
-      state: number;
-      source: string;
-      price: string;
-      takerEvents: TakerEvent[];
-      account?: Account;
-    }
-
-    export interface TakerEvent {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      /**
-       * ID of the associated order
-       */
-      orderId: number;
-      /**
-       * Amount filled on the order
-       */
-      takerAmount: string;
-      /**
-       * Address of the order taker
-       */
-      taker: string;
-      /**
-       * Associated transaction hash of fill event
-       */
-      txHash: string;
-      /**
-       * State of the event: Pending(0), Complete (1), Failed (2)
-       */
-      state: number;
-      order: Order;
-    }
-
     export interface Account {
       /**
        * Unique Identifier
@@ -460,6 +324,105 @@ PendingCancel (5)
       account: Account;
     }
 
+    /**
+     * An order that has been recorded on the ERC dEX Order Book
+     */
+    export interface Order {
+      /**
+       * Unique Identifier
+       */
+      id: number;
+      /**
+       * Date of creation
+       */
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
+      /**
+       * Date on which the order was closed through fill, cancel, etc
+       */
+      dateClosed?: Date;
+      /**
+       * ID of the Ethereum network the order is associated with
+       */
+      networkId: number;
+      /**
+       * 0x Exchange Contract Address
+       */
+      exchangeContractAddress: string;
+      /**
+       * Unix timestamp of order expiration (in seconds)
+       */
+      expirationUnixTimestampSec: number;
+      /**
+       * Address of the fee recipient
+       */
+      feeRecipient: string;
+      /**
+       * Address of the order maker
+       */
+      maker: string;
+      /**
+       * Fee due from maker on order fill
+       */
+      makerFee: string;
+      /**
+       * Token address of the maker token
+       */
+      makerTokenAddress: string;
+      /**
+       * Total amount of maker token in order
+       */
+      makerTokenAmount: string;
+      /**
+       * Secure salt
+       */
+      salt: string;
+      /**
+       * Serialized version of the EC signature for signed orders
+       */
+      serializedEcSignature: string;
+      /**
+       * Taker address; generally a null taker
+       */
+      taker: string;
+      /**
+       * Fee due from taker on order fill
+       */
+      takerFee: string;
+      /**
+       * Token address of the taker token
+       */
+      takerTokenAddress: string;
+      /**
+       * Total amount of taker token in order
+       */
+      takerTokenAmount: string;
+      /**
+       * Remaining amount in the order in terms of taker token units
+       */
+      remainingTakerTokenAmount: string;
+      /**
+       * The hash of the signed order
+       */
+      orderHash: string;
+      /**
+       * Account ID of originator
+       */
+      accountId?: number;
+      /**
+       * State of the order: Open (0), Canceled (1),
+Filled (2), Expired(3), Removed(4),
+PendingCancel (5)
+       */
+      state: number;
+      source: string;
+      price: string;
+      account?: Account;
+    }
+
     export interface TransactionClaim {
       /**
        * Unique Identifier
@@ -564,6 +527,7 @@ PendingCancel (5)
       remainingTakerTokenAmount: string;
       orderHash: string;
       source: string;
+      price: string;
     }
 
     export interface IStandardFeeRequest {
@@ -996,33 +960,6 @@ Kovan: 42
       source?: string;
     }
 
-    export interface ITakerEventsGetByTakerParams {
-      /**
-       * ID of Ethereum network
-       */
-      networkId: number;
-      /**
-       * Address of taker
-       */
-      taker: string;
-    }
-
-    export interface ITakerEventsGetByPairParams {
-      /**
-       * ID of Ethereum network
-       */
-      networkId: number;
-      /**
-       * Address of maker token
-       */
-      makerTokenAddress: string;
-      /**
-       * Address of taker token
-       */
-      takerTokenAddress: string;
-      taker?: string;
-    }
-
     export interface ITickerGetParams {
       /**
        * Ethereum Network ID
@@ -1140,10 +1077,21 @@ options: &#x27;json&#x27;, &#x27;csv&#x27;
 CSV: Page size limited to 10000 records
        */
       format?: string;
+      /**
+       * Token pair
+format: base_token_symbol/quote_token_symbol
+example: ZRX/WETH
+       */
+      pair?: string;
     }
 
     export interface ITransactionClaimsClaimParams {
       request: IClaimTransactionRequest;
+    }
+
+    export interface ITransactionClaimsReportParams {
+      txHash: string;
+      networkId: number;
     }
     export interface IAggregatedOrdersService {
 
@@ -1524,57 +1472,6 @@ Do on-chain cancellation for permanent cancelation
         return this.executeRequest<IStandardOrderbook>(requestParams, headers);
       }
     }
-    export interface ITakerEventsService {
-
-      /**
-       * Get Taker Events
-       */
-      getByTaker(params: ITakerEventsGetByTakerParams, headers?: IAdditionalHeaders): Promise<TakerEvent[]>;
-
-      /**
-       * Get Taker Events by token pair
-       */
-      getByPair(params: ITakerEventsGetByPairParams, headers?: IAdditionalHeaders): Promise<TakerEvent[]>;
-    }
-
-    export class TakerEventsService extends ApiService implements ITakerEventsService {
-
-      /**
-       * Get Taker Events
-       */
-      public async getByTaker(params: ITakerEventsGetByTakerParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'GET',
-          url: `${baseApiUrl}/api/taker-events/taker`
-        };
-
-        requestParams.queryParameters = {
-          networkId: params.networkId,
-          taker: params.taker,
-        };
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<TakerEvent[]>(requestParams, headers);
-      }
-
-      /**
-       * Get Taker Events by token pair
-       */
-      public async getByPair(params: ITakerEventsGetByPairParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'GET',
-          url: `${baseApiUrl}/api/taker-events/pair`
-        };
-
-        requestParams.queryParameters = {
-          networkId: params.networkId,
-          makerTokenAddress: params.makerTokenAddress,
-          takerTokenAddress: params.takerTokenAddress,
-          taker: params.taker,
-        };
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<TakerEvent[]>(requestParams, headers);
-      }
-    }
     export interface ITickerService {
 
       get(params: ITickerGetParams, headers?: IAdditionalHeaders): Promise<IGlobalTickerRecord[]>;
@@ -1653,6 +1550,7 @@ Do on-chain cancellation for permanent cancelation
           min_date: params.min_date,
           max_date: params.max_date,
           format: params.format,
+          pair: params.pair,
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IGetTradeHistoryLogsResponse>(requestParams, headers);
@@ -1661,6 +1559,11 @@ Do on-chain cancellation for permanent cancelation
     export interface ITransactionClaimsService {
 
       claim(params: ITransactionClaimsClaimParams, headers?: IAdditionalHeaders): Promise<void>;
+
+      /**
+       * Report a transaction from the UI
+       */
+      report(params: ITransactionClaimsReportParams, headers?: IAdditionalHeaders): Promise<void>;
     }
 
     export class TransactionClaimsService extends ApiService implements ITransactionClaimsService {
@@ -1672,6 +1575,23 @@ Do on-chain cancellation for permanent cancelation
         };
 
         requestParams.body = params.request;
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<void>(requestParams, headers);
+      }
+
+      /**
+       * Report a transaction from the UI
+       */
+      public async report(params: ITransactionClaimsReportParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'GET',
+          url: `${baseApiUrl}/api/transaction-claims/report`
+        };
+
+        requestParams.queryParameters = {
+          txHash: params.txHash,
+          networkId: params.networkId,
+        };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<void>(requestParams, headers);
       }
@@ -1701,7 +1621,7 @@ export interface IPairOrderChangeEventParams {
 
 export interface IOrderChangeEventData {
   order: Order;
-  eventType: ("canceled" | "created" | "expired" | "filled" | "partially-filled" | "pending-cancellation" | "pending-filled" | "pending-partially-filled" | "removed");
+  eventType: ("canceled" | "created" | "expired" | "filled" | "partially-filled" | "removed");
   reason?: string;
   
 }
@@ -1789,44 +1709,7 @@ export interface Order {
   state: number;
   source: string;
   price: string;
-  takerEvents: TakerEvent[];
   account?: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface TakerEvent {
-  /**
-   * ID of the associated order
-   */
-  orderId: number;
-  /**
-   * Amount filled on the order
-   */
-  takerAmount: string;
-  /**
-   * Address of the order taker
-   */
-  taker: string;
-  /**
-   * Associated transaction hash of fill event
-   */
-  txHash: string;
-  /**
-   * State of the event: Pending(0), Complete (1), Failed (2)
-   */
-  state: number;
-  order: Order;
   /**
    * Unique Identifier
    */
@@ -2051,609 +1934,6 @@ export interface Notification {
 * and run json-schema-to-typescript to regenerate this file.
 */
 
-export interface IPairTakerEventEventParams {
-  makerTokenAddress: string;
-  takerTokenAddress: string;
-  
-}
-/**
-* This file was automatically generated by json-schema-to-typescript.
-* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
-* and run json-schema-to-typescript to regenerate this file.
-*/
-
-export interface IPairTakerEventEventData {
-  takerEvent: TakerEvent;
-  eventType: ("created" | "removed" | "updated");
-  
-}
-export interface TakerEvent {
-  /**
-   * ID of the associated order
-   */
-  orderId: number;
-  /**
-   * Amount filled on the order
-   */
-  takerAmount: string;
-  /**
-   * Address of the order taker
-   */
-  taker: string;
-  /**
-   * Associated transaction hash of fill event
-   */
-  txHash: string;
-  /**
-   * State of the event: Pending(0), Complete (1), Failed (2)
-   */
-  state: number;
-  order: Order;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-/**
- * An order that has been recorded on the ERC dEX Order Book
- */
-export interface Order {
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateClosed?: string;
-  /**
-   * ID of the Ethereum network the order is associated with
-   */
-  networkId: number;
-  /**
-   * 0x Exchange Contract Address
-   */
-  exchangeContractAddress: string;
-  /**
-   * Unix timestamp of order expiration (in seconds)
-   */
-  expirationUnixTimestampSec: number;
-  /**
-   * Address of the fee recipient
-   */
-  feeRecipient: string;
-  /**
-   * Address of the order maker
-   */
-  maker: string;
-  /**
-   * Fee due from maker on order fill
-   */
-  makerFee: string;
-  /**
-   * Token address of the maker token
-   */
-  makerTokenAddress: string;
-  /**
-   * Total amount of maker token in order
-   */
-  makerTokenAmount: string;
-  /**
-   * Secure salt
-   */
-  salt: string;
-  /**
-   * Serialized version of the EC signature for signed orders
-   */
-  serializedEcSignature: string;
-  /**
-   * Taker address; generally a null taker
-   */
-  taker: string;
-  /**
-   * Fee due from taker on order fill
-   */
-  takerFee: string;
-  /**
-   * Token address of the taker token
-   */
-  takerTokenAddress: string;
-  /**
-   * Total amount of taker token in order
-   */
-  takerTokenAmount: string;
-  /**
-   * Remaining amount in the order in terms of taker token units
-   */
-  remainingTakerTokenAmount: string;
-  /**
-   * The hash of the signed order
-   */
-  orderHash: string;
-  /**
-   * Account ID of originator
-   */
-  accountId?: number;
-  /**
-   * State of the order: Open (0), Canceled (1),
-   * Filled (2), Expired(3), Removed(4),
-   * PendingCancel (5)
-   */
-  state: number;
-  source: string;
-  price: string;
-  takerEvents: TakerEvent[];
-  account?: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface Account {
-  name: string;
-  city: string;
-  state: string;
-  country: string;
-  address: string;
-  accountType?: ("developer" | "market-maker" | "other" | "relayer" | "trader");
-  phoneNumber?: string;
-  referrerAccountId?: number;
-  referralWalletId?: number;
-  isConfirmed: boolean;
-  referrerAccount: Account;
-  referralWallet?: AuthorizedWallet;
-  users: User[];
-  rebateContracts: RebateContract[];
-  apiKeys: ApiKey[];
-  authorizedWallets: AuthorizedWallet[];
-  orders: Order[];
-  transactionClaims: TransactionClaim[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface AuthorizedWallet {
-  /**
-   * Ethereum Account Address
-   */
-  address: string;
-  accountId: number;
-  userId: number;
-  account: Account;
-  user: User;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface User {
-  email: string;
-  firstName: string;
-  lastName: string;
-  accountId: number;
-  account: Account;
-  authorizedWallets: AuthorizedWallet[];
-  roles: ("ercdex-admin")[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface RebateContract {
-  txHash: string;
-  contractAddress: string;
-  principal: string;
-  partner: string;
-  referrer?: string;
-  networkId: number;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface ApiKey {
-  name: string;
-  keyId: string;
-  /**
-   * ignore
-   */
-  secret: string;
-  createdById: number;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface TransactionClaim {
-  txHash: string;
-  networkId: number;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-/**
-* This file was automatically generated by json-schema-to-typescript.
-* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
-* and run json-schema-to-typescript to regenerate this file.
-*/
-
-export interface IAccountTakerEventEventParams {
-  account: string;
-  
-}
-/**
-* This file was automatically generated by json-schema-to-typescript.
-* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
-* and run json-schema-to-typescript to regenerate this file.
-*/
-
-export interface IAccountTakerEventEventData {
-  takerEvent: TakerEvent;
-  eventType: ("created" | "removed" | "updated");
-  
-}
-export interface TakerEvent {
-  /**
-   * ID of the associated order
-   */
-  orderId: number;
-  /**
-   * Amount filled on the order
-   */
-  takerAmount: string;
-  /**
-   * Address of the order taker
-   */
-  taker: string;
-  /**
-   * Associated transaction hash of fill event
-   */
-  txHash: string;
-  /**
-   * State of the event: Pending(0), Complete (1), Failed (2)
-   */
-  state: number;
-  order: Order;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-/**
- * An order that has been recorded on the ERC dEX Order Book
- */
-export interface Order {
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateClosed?: string;
-  /**
-   * ID of the Ethereum network the order is associated with
-   */
-  networkId: number;
-  /**
-   * 0x Exchange Contract Address
-   */
-  exchangeContractAddress: string;
-  /**
-   * Unix timestamp of order expiration (in seconds)
-   */
-  expirationUnixTimestampSec: number;
-  /**
-   * Address of the fee recipient
-   */
-  feeRecipient: string;
-  /**
-   * Address of the order maker
-   */
-  maker: string;
-  /**
-   * Fee due from maker on order fill
-   */
-  makerFee: string;
-  /**
-   * Token address of the maker token
-   */
-  makerTokenAddress: string;
-  /**
-   * Total amount of maker token in order
-   */
-  makerTokenAmount: string;
-  /**
-   * Secure salt
-   */
-  salt: string;
-  /**
-   * Serialized version of the EC signature for signed orders
-   */
-  serializedEcSignature: string;
-  /**
-   * Taker address; generally a null taker
-   */
-  taker: string;
-  /**
-   * Fee due from taker on order fill
-   */
-  takerFee: string;
-  /**
-   * Token address of the taker token
-   */
-  takerTokenAddress: string;
-  /**
-   * Total amount of taker token in order
-   */
-  takerTokenAmount: string;
-  /**
-   * Remaining amount in the order in terms of taker token units
-   */
-  remainingTakerTokenAmount: string;
-  /**
-   * The hash of the signed order
-   */
-  orderHash: string;
-  /**
-   * Account ID of originator
-   */
-  accountId?: number;
-  /**
-   * State of the order: Open (0), Canceled (1),
-   * Filled (2), Expired(3), Removed(4),
-   * PendingCancel (5)
-   */
-  state: number;
-  source: string;
-  price: string;
-  takerEvents: TakerEvent[];
-  account?: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface Account {
-  name: string;
-  city: string;
-  state: string;
-  country: string;
-  address: string;
-  accountType?: ("developer" | "market-maker" | "other" | "relayer" | "trader");
-  phoneNumber?: string;
-  referrerAccountId?: number;
-  referralWalletId?: number;
-  isConfirmed: boolean;
-  referrerAccount: Account;
-  referralWallet?: AuthorizedWallet;
-  users: User[];
-  rebateContracts: RebateContract[];
-  apiKeys: ApiKey[];
-  authorizedWallets: AuthorizedWallet[];
-  orders: Order[];
-  transactionClaims: TransactionClaim[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface AuthorizedWallet {
-  /**
-   * Ethereum Account Address
-   */
-  address: string;
-  accountId: number;
-  userId: number;
-  account: Account;
-  user: User;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface User {
-  email: string;
-  firstName: string;
-  lastName: string;
-  accountId: number;
-  account: Account;
-  authorizedWallets: AuthorizedWallet[];
-  roles: ("ercdex-admin")[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface RebateContract {
-  txHash: string;
-  contractAddress: string;
-  principal: string;
-  partner: string;
-  referrer?: string;
-  networkId: number;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface ApiKey {
-  name: string;
-  keyId: string;
-  /**
-   * ignore
-   */
-  secret: string;
-  createdById: number;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface TransactionClaim {
-  txHash: string;
-  networkId: number;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-/**
-* This file was automatically generated by json-schema-to-typescript.
-* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
-* and run json-schema-to-typescript to regenerate this file.
-*/
-
 export interface ITickerSubscriptionParams {
   
 }
@@ -2712,6 +1992,309 @@ export interface IPriceLevel {
   price: string;
   volume: string;
   volumeRatio: number;
+  
+}
+/**
+* This file was automatically generated by json-schema-to-typescript.
+* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
+* and run json-schema-to-typescript to regenerate this file.
+*/
+
+export interface IAccountTradeHistoryParams {
+  networkId: number;
+  account: string;
+  
+}
+/**
+* This file was automatically generated by json-schema-to-typescript.
+* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
+* and run json-schema-to-typescript to regenerate this file.
+*/
+
+export interface IAccountTradeHistoryData {
+  log: TradeHistoryLog;
+  
+}
+export interface TradeHistoryLog {
+  /**
+   * Unique, generated hash representing 0x order
+   */
+  orderHash: string;
+  /**
+   * Transaction Hash
+   */
+  txHash: string;
+  /**
+   * Ethereum Network
+   * Mainnet: 1
+   * Kovan: 42
+   */
+  networkId: number;
+  /**
+   * Address of order maker
+   */
+  maker: string;
+  /**
+   * Address of order taker
+   */
+  taker: string;
+  /**
+   * Address of order feeRecipient
+   */
+  feeRecipient: string;
+  /**
+   * Address of maker token
+   */
+  makerTokenAddress: string;
+  /**
+   * Symbol of maker token
+   */
+  makerTokenSymbol: string;
+  /**
+   * Name of maker token
+   */
+  makerTokenName: string;
+  /**
+   * Decimals of maker token
+   */
+  makerTokenDecimals: number;
+  /**
+   * Unit price of maker token in USD
+   */
+  makerTokenUsdPrice: string;
+  /**
+   * Address of taker token
+   */
+  takerTokenAddress: string;
+  /**
+   * Symbol of taker token
+   */
+  takerTokenSymbol: string;
+  /**
+   * Name of taker token
+   */
+  takerTokenName: string;
+  takerTokenDecimals: number;
+  /**
+   * Unit price of taker token in USD
+   */
+  takerTokenUsdPrice: string;
+  /**
+   * Base amount of maker token filled in trade
+   */
+  filledMakerTokenAmount: string;
+  /**
+   * Unit amount of maker token filled in trade (adjusted for token decimals)
+   */
+  filledMakerTokenUnitAmount: string;
+  /**
+   * USD value of maker amount
+   */
+  filledMakerTokenAmountUsd: string;
+  /**
+   * Base amount of taker token filled in trade
+   */
+  filledTakerTokenAmount: string;
+  /**
+   * Unit amount of taker token filled in trade (adjusted for token decimals)
+   */
+  filledTakerTokenUnitAmount: string;
+  /**
+   * USD value of taker amount
+   */
+  filledTakerTokenAmountUsd: string;
+  /**
+   * Base amount of ZRX fees collected from maker
+   */
+  paidMakerFeeAmount: string;
+  /**
+   * Unit amount of ZRX fees collected from maker
+   */
+  paidMakerFeeUnitAmount: string;
+  /**
+   * USD value of maker fee
+   */
+  paidMakerFeeUsd: string;
+  /**
+   * Base amount of ZRX fees collected from taker
+   */
+  paidTakerFeeAmount: string;
+  /**
+   * Unit amount of ZRX fees collected from taker
+   */
+  paidTakerFeeUnitAmount: string;
+  /**
+   * USD value of taker fee
+   */
+  paidTakerFeeUsd: string;
+  /**
+   * Name of originating relayer (if known)
+   */
+  relayer: string;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+/**
+* This file was automatically generated by json-schema-to-typescript.
+* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
+* and run json-schema-to-typescript to regenerate this file.
+*/
+
+export interface IPairTradeHistoryParams {
+  networkId: number;
+  baseSymbol: string;
+  quoteSymbol: string;
+  
+}
+/**
+* This file was automatically generated by json-schema-to-typescript.
+* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
+* and run json-schema-to-typescript to regenerate this file.
+*/
+
+export interface IPairTradeHistoryData {
+  log: TradeHistoryLog;
+  
+}
+export interface TradeHistoryLog {
+  /**
+   * Unique, generated hash representing 0x order
+   */
+  orderHash: string;
+  /**
+   * Transaction Hash
+   */
+  txHash: string;
+  /**
+   * Ethereum Network
+   * Mainnet: 1
+   * Kovan: 42
+   */
+  networkId: number;
+  /**
+   * Address of order maker
+   */
+  maker: string;
+  /**
+   * Address of order taker
+   */
+  taker: string;
+  /**
+   * Address of order feeRecipient
+   */
+  feeRecipient: string;
+  /**
+   * Address of maker token
+   */
+  makerTokenAddress: string;
+  /**
+   * Symbol of maker token
+   */
+  makerTokenSymbol: string;
+  /**
+   * Name of maker token
+   */
+  makerTokenName: string;
+  /**
+   * Decimals of maker token
+   */
+  makerTokenDecimals: number;
+  /**
+   * Unit price of maker token in USD
+   */
+  makerTokenUsdPrice: string;
+  /**
+   * Address of taker token
+   */
+  takerTokenAddress: string;
+  /**
+   * Symbol of taker token
+   */
+  takerTokenSymbol: string;
+  /**
+   * Name of taker token
+   */
+  takerTokenName: string;
+  takerTokenDecimals: number;
+  /**
+   * Unit price of taker token in USD
+   */
+  takerTokenUsdPrice: string;
+  /**
+   * Base amount of maker token filled in trade
+   */
+  filledMakerTokenAmount: string;
+  /**
+   * Unit amount of maker token filled in trade (adjusted for token decimals)
+   */
+  filledMakerTokenUnitAmount: string;
+  /**
+   * USD value of maker amount
+   */
+  filledMakerTokenAmountUsd: string;
+  /**
+   * Base amount of taker token filled in trade
+   */
+  filledTakerTokenAmount: string;
+  /**
+   * Unit amount of taker token filled in trade (adjusted for token decimals)
+   */
+  filledTakerTokenUnitAmount: string;
+  /**
+   * USD value of taker amount
+   */
+  filledTakerTokenAmountUsd: string;
+  /**
+   * Base amount of ZRX fees collected from maker
+   */
+  paidMakerFeeAmount: string;
+  /**
+   * Unit amount of ZRX fees collected from maker
+   */
+  paidMakerFeeUnitAmount: string;
+  /**
+   * USD value of maker fee
+   */
+  paidMakerFeeUsd: string;
+  /**
+   * Base amount of ZRX fees collected from taker
+   */
+  paidTakerFeeAmount: string;
+  /**
+   * Unit amount of ZRX fees collected from taker
+   */
+  paidTakerFeeUnitAmount: string;
+  /**
+   * USD value of taker fee
+   */
+  paidTakerFeeUsd: string;
+  /**
+   * Name of originating relayer (if known)
+   */
+  relayer: string;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
   
 }
 
@@ -2773,7 +2356,7 @@ export interface IPriceLevel {
           channel = channel.replace(`:${k}`, params[k]);
         });
 
-        return channel;
+        return channel.toLowerCase();
       }
     }
     export interface IPairOrderChange extends ISocketEvent<IPairOrderChangeEventParams, IOrderChangeEventData> {};
@@ -2800,22 +2383,6 @@ export interface IPriceLevel {
     export class AccountNotification extends SocketEvent<IAccountNotificationEventParams, IAccountNotificationEventData> implements IAccountNotification {
       protected path = 'account-notification/:account';
     }
-    export interface IPairTakerEvent extends ISocketEvent<IPairTakerEventEventParams, IPairTakerEventEventData> {};
-
-    /**
-     * Taker events related to a token pair
-     */
-    export class PairTakerEvent extends SocketEvent<IPairTakerEventEventParams, IPairTakerEventEventData> implements IPairTakerEvent {
-      protected path = 'pair-taker-event/:makerTokenAddress/:takerTokenAddress';
-    }
-    export interface IAccountTakerEvent extends ISocketEvent<IAccountTakerEventEventParams, IAccountTakerEventEventData> {};
-
-    /**
-     * Taker events related to an address
-     */
-    export class AccountTakerEvent extends SocketEvent<IAccountTakerEventEventParams, IAccountTakerEventEventData> implements IAccountTakerEvent {
-      protected path = 'account-taker-event/:account';
-    }
     export interface ITickerSubscription extends ISocketEvent<ITickerSubscriptionParams, ITickerSubscriptionData> {};
 
     /**
@@ -2831,6 +2398,22 @@ export interface IPriceLevel {
      */
     export class AggregatedOrderFeed extends SocketEvent<IAggregatedOrderFeedParams, IAggregatedOrderFeedData> implements IAggregatedOrderFeed {
       protected path = 'aggregated-order-feed/:baseTokenAddress/:quoteTokenAddress';
+    }
+    export interface IAccountTradeHistoryLog extends ISocketEvent<IAccountTradeHistoryParams, IAccountTradeHistoryData> {};
+
+    /**
+     * Trade history logs for account
+     */
+    export class AccountTradeHistoryLog extends SocketEvent<IAccountTradeHistoryParams, IAccountTradeHistoryData> implements IAccountTradeHistoryLog {
+      protected path = 'account-trade-history/:networkId/:account';
+    }
+    export interface IPairTradeHistoryLog extends ISocketEvent<IPairTradeHistoryParams, IPairTradeHistoryData> {};
+
+    /**
+     * Trade history logs for a token pair
+     */
+    export class PairTradeHistoryLog extends SocketEvent<IPairTradeHistoryParams, IPairTradeHistoryData> implements IPairTradeHistoryLog {
+      protected path = 'pair-trade-history/:networkId/:baseSymbol/:quoteSymbol';
     }
   }
 
