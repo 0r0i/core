@@ -810,6 +810,7 @@ Kovan: 42
     export interface IClaimTransactionRequest {
       networkId: number;
       txHash: string;
+      accountId?: number;
     }
 
 
