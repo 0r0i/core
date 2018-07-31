@@ -73,9 +73,7 @@ if (!baseApiUrl) {
 
 const template = (eventModelContent: string) => handlebars.compile(`/* tslint:disable */
 import { ApiService, IAdditionalHeaders, IRequestParams } from '../api-service';
-import { BigNumber } from 'bignumber.js';
 import { tokenCache, TokenCache } from '../token-cache';
-import { ZeroEx } from '0x.js';
 const ReconnectingWebsocket = require('reconnecting-websocket');
 
 export namespace Aqueduct {
@@ -334,112 +332,6 @@ export namespace Aqueduct {
   }
 
   export namespace Utils {
-    export interface ISignOrderParams {
-      maker: string;
-      taker: string;
-      makerFee: BigNumber;
-      takerFee: BigNumber;
-      makerTokenAmount: BigNumber;
-      makerTokenAddress: string;
-      takerTokenAmount: BigNumber;
-      takerTokenAddress: string;
-      exchangeContractAddress: string;
-      feeRecipient: string;
-      expirationUnixTimestampSec: number;
-      salt: BigNumber;
-    }
-
-    export interface IZeroExOrder {
-      maker: string;
-      taker: string;
-      makerFee: BigNumber;
-      takerFee: BigNumber;
-      makerTokenAmount: BigNumber;
-      takerTokenAmount: BigNumber;
-      makerTokenAddress: string;
-      takerTokenAddress: string;
-      salt: BigNumber;
-      exchangeContractAddress: string;
-      feeRecipient: string;
-      expirationUnixTimestampSec: BigNumber;
-    }
-
-    export interface IZeroExSignedOrder extends IZeroExOrder {
-      ecSignature: Api.IEcSignature;
-    }
-
-    export const signOrder = async (zeroEx: ZeroEx, params: ISignOrderParams, shouldAddPersonalMessagePrefix = false): Promise<Aqueduct.Api.IStandardOrderCreationRequest> => {
-      const order: IZeroExOrder = {
-        maker: params.maker,
-        taker: params.taker,
-        makerFee: params.makerFee,
-        takerFee: params.takerFee,
-        makerTokenAmount: params.makerTokenAmount,
-        takerTokenAmount: params.takerTokenAmount,
-        makerTokenAddress: params.makerTokenAddress,
-        takerTokenAddress: params.takerTokenAddress as string,
-        salt: params.salt,
-        exchangeContractAddress: params.exchangeContractAddress,
-        feeRecipient: params.feeRecipient,
-        expirationUnixTimestampSec: new BigNumber(params.expirationUnixTimestampSec)
-      };
-
-      const orderHash = ZeroEx.getOrderHashHex(order);
-      const ecSignature = await zeroEx.signOrderHashAsync(orderHash, params.maker, shouldAddPersonalMessagePrefix);
-
-      return {
-        maker: params.maker,
-        taker: order.taker,
-        makerFee: params.makerFee.toString(),
-        takerFee: params.takerFee.toString(),
-        makerTokenAmount: params.makerTokenAmount.toString(),
-        takerTokenAmount: params.takerTokenAmount.toString(),
-        makerTokenAddress: params.makerTokenAddress,
-        takerTokenAddress: params.takerTokenAddress,
-        salt: order.salt.toString(),
-        exchangeContractAddress: params.exchangeContractAddress,
-        feeRecipient: params.feeRecipient,
-        expirationUnixTimestampSec: order.expirationUnixTimestampSec.toString(),
-        ecSignature
-      };
-    };
-
-    export const convertStandardOrderToSignedOrder = (order: Aqueduct.Api.IStandardOrder): IZeroExSignedOrder => {
-      return {
-        ecSignature: order.ecSignature,
-        exchangeContractAddress: order.exchangeContractAddress,
-        expirationUnixTimestampSec: new BigNumber(order.expirationUnixTimestampSec),
-        feeRecipient: order.feeRecipient,
-        maker: order.maker,
-        makerFee: new BigNumber(order.makerFee),
-        makerTokenAddress: order.makerTokenAddress,
-        makerTokenAmount: new BigNumber(order.makerTokenAmount),
-        salt: new BigNumber(order.salt),
-        taker: order.taker,
-        takerFee: new BigNumber(order.takerFee),
-        takerTokenAddress: order.takerTokenAddress,
-        takerTokenAmount: new BigNumber(order.takerTokenAmount)
-      };
-    };
-
-    export const convertOrderToSignedOrder = (order: Aqueduct.Api.Order): IZeroExSignedOrder => {
-      return {
-        ecSignature: JSON.parse(order.serializedEcSignature),
-        exchangeContractAddress: order.exchangeContractAddress,
-        expirationUnixTimestampSec: new BigNumber(order.expirationUnixTimestampSec),
-        feeRecipient: order.feeRecipient,
-        maker: order.maker,
-        makerFee: new BigNumber(order.makerFee),
-        makerTokenAddress: order.makerTokenAddress,
-        makerTokenAmount: new BigNumber(order.makerTokenAmount),
-        salt: new BigNumber(order.salt),
-        taker: order.taker,
-        takerFee: new BigNumber(order.takerFee),
-        takerTokenAddress: order.takerTokenAddress,
-        takerTokenAmount: new BigNumber(order.takerTokenAmount)
-      };
-    };
-
     export const Tokens: TokenCache = tokenCache;
   }
 }
@@ -551,7 +443,9 @@ const getTemplateView = (swagger: Swagger.ISpec, eventSchema: IEventsSchema): IT
         .filter(operationKey => methods.find(m => m === operationKey))
         .forEach(operationKey => {
           const operation = (path as any)[operationKey] as Swagger.IOperation;
-          if (!operation.operationId || !operation.tags) { throw new Error(); }
+          if (!operation.operationId || !operation.tags) {
+            throw new Error();
+          }
 
           const tag = operation.tags[0];
           const service = serviceMap[tag] = serviceMap[tag] || { name: `${tag}Service`, operations: [] };

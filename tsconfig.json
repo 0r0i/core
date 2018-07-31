@@ -23,6 +23,9 @@
         "typeRoots": ["node_modules/@0xproject/typescript-typings/types", "node_modules/@types"]
     },
     "include": [
-        "src/**/*.ts"
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules/**/*.ts"
     ]
 }

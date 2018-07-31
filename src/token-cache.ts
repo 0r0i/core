@@ -1,13 +1,14 @@
 import { Aqueduct } from './generated/aqueduct';
 
 export class TokenCache {
-  private readonly networkTokenPairMap: Record<string, Promise<Aqueduct.Api.ITokenPair[]>> = {};
+  private tokenPairsPromise: Promise<Aqueduct.Api.ITokenPair[]> | undefined;
   private tokenSymbolMap: Record<string, Aqueduct.Api.IToken> | undefined;
 
-  public async getTokenPair(baseSymbol: string, quoteSymbol: string, networkId: number) {
-    const tokenPairs = await this.getSupportedTokenPairs(networkId);
+  public async getTokenPair(baseSymbol: string, quoteSymbol: string) {
+    const tokenPairs = await this.getSupportedTokenPairs();
 
-    const tokenPair = tokenPairs.find(tp => tp.tokenA.symbol.toLowerCase() === baseSymbol.toLowerCase() && tp.tokenB.symbol.toLowerCase() === quoteSymbol.toLowerCase());
+    const tokenPair = tokenPairs.find(tp => tp.assetDataA.symbol.toLowerCase() === baseSymbol.toLowerCase()
+      && tp.assetDataB.symbol.toLowerCase() === quoteSymbol.toLowerCase());
     if (!tokenPair) {
       throw new Error(`token pair not found or supported: ${baseSymbol}/${quoteSymbol}`);
     }
@@ -15,8 +16,8 @@ export class TokenCache {
     return tokenPair;
   }
 
-  public async getTokenBySymbol(symbol: string, networkId: number) {
-    const map = await this.getTokenMap(networkId);
+  public async getTokenBySymbol(symbol: string) {
+    const map = await this.getTokenMap();
 
     const token = map[symbol];
     if (!token) {
@@ -26,25 +27,27 @@ export class TokenCache {
     return token;
   }
 
-  private async getSupportedTokenPairs(networkId: number) {
-    const tokenPairsPromise = this.networkTokenPairMap[networkId];
-    if (tokenPairsPromise) {
-      return await tokenPairsPromise;
+  private async getSupportedTokenPairs() {
+    if (this.tokenPairsPromise) {
+      return await this.tokenPairsPromise;
     }
 
-    this.networkTokenPairMap[networkId] = new Aqueduct.Api.TokenPairsService().get({ networkId });
-    return await this.networkTokenPairMap[networkId];
+    const promise = this.tokenPairsPromise = (async () => {
+      const result = await new Aqueduct.Api.AssetPairsService().get({});
+      return result.records;
+    })();
+    return await promise;
   }
 
-  private async getTokenMap(networkId: number) {
+  private async getTokenMap() {
     if (this.tokenSymbolMap) { return this.tokenSymbolMap; }
 
-    const tokenPairs = await this.getSupportedTokenPairs(networkId);
+    const tokenPairs = await this.getSupportedTokenPairs();
 
     const map: Record<string, Aqueduct.Api.IToken> = {};
     tokenPairs.forEach(tp => {
-      map[tp.tokenA.symbol] = tp.tokenA;
-      map[tp.tokenB.symbol] = tp.tokenB;
+      map[tp.assetDataA.symbol] = tp.assetDataA;
+      map[tp.assetDataB.symbol] = tp.assetDataB;
     });
 
     this.tokenSymbolMap = map;

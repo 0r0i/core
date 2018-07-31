@@ -4,16 +4,13 @@
 
 ## Overview
 
-The JavaScript client library offers a simple way to begin interacting with the Aqueduct protocol, including convenience wrappers for a variety of trading related tasks. While we do offer a standalone [REST API](https://aqueduct.ercdex.com/rest.html) and [WebSocket API](https://aqueduct.ercdex.com/#/events), the client library helps to bundle together common workflows and enhances API discoverability for TypeScript users.
+The JavaScript client library offers a simple way to begin interacting with the Aqueduct network, including convenience wrappers for a variety of trading related tasks. While we do offer a standalone [REST API](https://aqueduct.ercdex.com/rest.html) and [WebSocket API](https://aqueduct.ercdex.com/#/events), the client library helps to bundle together common workflows and enhances API discoverability for TypeScript users.
 
 ## Quick Start
 
 ### Setup environment
 
 - Must have [node.js](https://nodejs.org/en/) installed
-- Recommended: A local Ethereum client such as [Parity](https://www.parity.io/). While not required to interact with the APIs, some wallet will be necessary to sign transactions using Web3.
-    - If you plan to have trades execute autonomously, you'll need to unlock your account so that transactions can be automatically approved during script execution.
-    - Read about [Configuring Parity](https://paritytech.github.io/wiki/Configuring-Parity), specifically the "account" section
 
 ### Install NPM Package
 
@@ -29,7 +26,7 @@ The SDK can be thought of as containing four 'types' of actions:
 
 ### Initialization
 
-Aqueduct.Initialize *must* be called before interacting with the SDK in any way:
+Aqueduct.Initialize *must* be called before interacting with the SDK in any way.
 
 ```
 import { Aqueduct } from 'aqueduct';
@@ -39,17 +36,17 @@ Aqueduct.Initialize();
 
 #### A note about WebSockets
 
-Modern browsers containing native implementations of the [WebSockets API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API). If you intend to use the Events API outside of a browser, you'll need to bring your own WebSockets implementation. We recommend a great library like [ws](https://github.com/websockets/ws). In a node.js environment, make sure to put the WebSocket constructor the global namespace:
+Modern browsers containing native implementations of the [WebSockets API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API). If you intend to use the Events API outside of a browser, you'll need to bring your own WebSockets implementation. We recommend a great library like [html5-websocket](https://github.com/pladaria/html5-websocket). In a node.js environment, make sure to put the WebSocket constructor the global namespace:
 
 ```
-import * as ws from 'ws';
+import * as ws from 'html5-websocket';
 
 global.WebSocket = ws;
 ```
 
 ### Trading Workflows
 
-Trading workflows refers to common trading actions that are actually composed of several layers, including interacting with the Aqueduct server API, validating order parameters, and interacting with the Ethereum network in some way (off chain signing, or sending transactions). It is completely possible to post, fill, and cancel orders without using these workflow wrappers, but these wrappers create an intuitive interface for traders.
+Trading workflows refers to common trading actions that are actually composed of several layers, including interacting with the Aqueduct API, validating order parameters, and interacting with the Ethereum network in some way (off chain signing, or sending transactions). It is completely possible to post, fill, and cancel orders without using these workflow wrappers, but these wrappers create an intuitive interface for traders.
 
 #### Placing a Limit Order
 
@@ -149,35 +146,15 @@ import * as Web3 from 'web3';
 (async () => {
   Aqueduct.Initialize();
 
-  const cancelTxHash = await new CancelOrder({
-    orderHash: '0x1ec30426e15451eb75d324c2b674f65b5a0acdcfab6bba772e3347c30296c5c6',
+  const cancelResult = await new CancelOrder({
+    order,
     web3: new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
   }).execute();
 
-  console.log(`order cancelled. tx: ${cancelTxHash}`);
+  console.log(cancelResult);
 })();
 
 ```
-
-#### "Soft" canceling an order
-
-Canceling an order on-chain incurs gas costs. Traders can 'soft' cancel an order that they've opened by providing a
-signed orderhash. This removes the order from the ERC dEX order book. However, trader should recognize that the order is still
-technically fillable by anyone that has the order metadata.
-
-```
-import { Aqueduct, SoftCancelOrder } from 'aqueduct';
-import * as Web3 from 'web3';
-
-(async () => {
-  Aqueduct.Initialize();
-
-  await new SoftCancelOrder({
-    orderHash: '0x1ec30426e15451eb75d324c2b674f65b5a0acdcfab6bba772e3347c30296c5c6',
-    web3: new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
-  }).execute();
-})();
-
 ```
 
 ### Rest API Services
@@ -187,14 +164,13 @@ The REST API SDK (conveniently located in the Aqueduct.Api namespace) is a simpl
 #### Getting a list of your open orders
 
 ```
-import { Aqueduct } from '..aqueduct';
+import { Aqueduct } from 'aqueduct';
 
 Aqueduct.Initialize();
 
 (async () => {
   const orders = await new Aqueduct.Api.OrdersService().get({
-    maker: '0x00be81aeb2c6b82c68123f49b4bf983224124ada',
-    networkId: 1
+    makerAddress: '0x00be81aeb2c6b82c68123f49b4bf983224124ada'
   });
 
   console.log(orders);

@@ -1,58 +1,50 @@
-import { BigNumber } from 'bignumber.js';
-import * as Web3 from 'web3';
+import { Provider } from '0x.js';
+import { SignatureType } from '@0xproject/types';
+import * as ethUtil from 'ethereumjs-util';
 import { Aqueduct } from './generated/aqueduct';
+import { SigningUtils } from './signing-utils';
 import { Web3EnabledService } from './web3-enabled-service';
 
 export interface ICancelOrderParams {
   /**
-   * Web3 instance
+   * Web3 provider engine
    */
-  web3: Web3;
+  provider: Provider;
 
   /**
-   * Order Hash
+   * Order
    */
-  orderHash: string;
-
-  /**
-   * Gas Price
-   */
-  gasPrice?: string | number | BigNumber;
+  order: Aqueduct.Api.Order;
 }
 
 /**
  * Cancel an order by orderHash; returns txHash if successful
  */
-export class CancelOrder extends Web3EnabledService<string> {
+export class CancelOrder extends Web3EnabledService<Aqueduct.Api.ICancelOrderResult> {
   constructor(private readonly params: ICancelOrderParams) {
-    super(params.web3);
+    super(params.provider);
 
-    if (!params.orderHash) {
-      throw new Error('no orderHash provided');
+    if (!params.order) {
+      throw new Error('no order provided');
     }
   }
 
   protected async run() {
-    let order: Aqueduct.Api.IStandardOrder;
-    try {
-      order = await new Aqueduct.Api.StandardService().getOrderByHash({
-        orderHash: this.params.orderHash,
-        networkId: this.networkId
-      });
-    } catch (err) {
-      console.error(`failed get order with hash ${this.params.orderHash}`);
-      throw err;
-    }
-
-    const signedOrder = Aqueduct.Utils.convertStandardOrderToSignedOrder(order);
-
-    try {
-      return await this.zeroEx.exchange.cancelOrderAsync(signedOrder, new BigNumber(signedOrder.takerTokenAmount), {
-        gasPrice: this.params.gasPrice ? new BigNumber(this.params.gasPrice) : undefined
-      });
-    } catch (err) {
-      console.error('failed to cancel order');
-      throw err;
-    }
+    const results = await new Aqueduct.Api.OrdersService().cancel({
+      request: {
+        cancellations: [
+          {
+            orderHash: this.params.order.orderHash,
+            signature: await SigningUtils.signMessageAsync(
+              this.zeroEx,
+              '0x' + ethUtil.sha3(`cancel:${this.params.order.orderHash}`).toString('hex'),
+              this.params.order.makerAddress,
+              SignatureType.EthSign
+            )
+          }
+        ]
+      }
+    });
+    return results[0];
   }
 }

@@ -1,8 +1,6 @@
 /* tslint:disable */
 import { ApiService, IAdditionalHeaders, IRequestParams } from '../api-service';
-import { BigNumber } from 'bignumber.js';
 import { tokenCache, TokenCache } from '../token-cache';
-import { ZeroEx } from '0x.js';
 const ReconnectingWebsocket = require('reconnecting-websocket');
 
 export namespace Aqueduct {
@@ -116,40 +114,34 @@ export namespace Aqueduct {
       buys: IOrderBookListing;
     }
 
-    /**
-     * Fee structure
-     */
-    export interface IFees {
-      /**
-       * Fee recipient - generally the address of the relayer
-       */
-      feeRecipient: string;
-      /**
-       * Fee owed by maker
-       */
-      makerFee: string;
-      /**
-       * Fee owed by taker
-       */
-      takerFee: string;
+    export interface IToken {
+      name: string;
+      address: string;
+      symbol: string;
+      decimals: number;
     }
 
-    /**
-     * Ethereum network description
-     */
+    export interface ITokenPair {
+      assetDataA: IToken;
+      assetDataB: IToken;
+      minAmount: string;
+      maxAmount: string;
+      precision: number;
+      baseVolume: string;
+      quoteVolume: string;
+    }
+
+    export interface IGetAssetPairsResponse {
+      total: number;
+      page: number;
+      per_page: number;
+      records: ITokenPair[];
+    }
+
     export interface INetwork {
-      /**
-       * Unique identifier of network
-       */
       id: number;
-      /**
-       * Long description of network
-       */
       label: string;
-      /**
-       * For general, readonly querying
-       */
-      queryUrl: string;
+      url: string;
     }
 
     /**
@@ -295,7 +287,6 @@ Current status of app
       principal: string;
       partner: string;
       referrer?: string;
-      networkId: number;
       accountId: number;
       account: Account;
     }
@@ -345,25 +336,21 @@ Current status of app
        */
       dateClosed?: Date;
       /**
-       * ID of the Ethereum network the order is associated with
-       */
-      networkId: number;
-      /**
        * 0x Exchange Contract Address
        */
-      exchangeContractAddress: string;
+      exchangeAddress: string;
       /**
        * Unix timestamp of order expiration (in seconds)
        */
-      expirationUnixTimestampSec: number;
+      expirationTimeSeconds: string;
       /**
        * Address of the fee recipient
        */
-      feeRecipient: string;
+      feeRecipientAddress: string;
       /**
        * Address of the order maker
        */
-      maker: string;
+      makerAddress: string;
       /**
        * Fee due from maker on order fill
        */
@@ -371,11 +358,19 @@ Current status of app
       /**
        * Token address of the maker token
        */
-      makerTokenAddress: string;
+      makerAssetAddress: string;
+      /**
+       * Encoded maker asset data
+       */
+      makerAssetData: string;
+      /**
+       * Encoded taker asset data
+       */
+      takerAssetData: string;
       /**
        * Total amount of maker token in order
        */
-      makerTokenAmount: string;
+      makerAssetAmount: string;
       /**
        * Secure salt
        */
@@ -383,11 +378,11 @@ Current status of app
       /**
        * Serialized version of the EC signature for signed orders
        */
-      serializedEcSignature: string;
+      signature: string;
       /**
        * Taker address; generally a null taker
        */
-      taker: string;
+      takerAddress: string;
       /**
        * Fee due from taker on order fill
        */
@@ -395,15 +390,15 @@ Current status of app
       /**
        * Token address of the taker token
        */
-      takerTokenAddress: string;
+      takerAssetAddress: string;
       /**
        * Total amount of taker token in order
        */
-      takerTokenAmount: string;
+      takerAssetAmount: string;
       /**
-       * Remaining amount in the order in terms of taker token units
+       * Remaining amount that can be filled in taker tokens
        */
-      remainingTakerTokenAmount: string;
+      remainingFillableAmount: string;
       /**
        * The hash of the signed order
        */
@@ -414,13 +409,14 @@ Current status of app
       accountId?: number;
       /**
        * State of the order: Open (0), Canceled (1),
-Filled (2), Expired(3), Removed(4),
-PendingCancel (5)
+Filled (2), Expired(3), Removed(4)
        */
       state: number;
-      source: string;
       price: string;
+      senderAddress: string;
+      system: boolean;
       account?: Account;
+      fillReceiptLogs: FillReceiptLog[];
     }
 
     export interface TransactionClaim {
@@ -437,9 +433,148 @@ PendingCancel (5)
        */
       dateUpdated: Date;
       txHash: string;
-      networkId: number;
       accountId: number;
       account: Account;
+    }
+
+    export interface FillReceiptLog {
+      /**
+       * Unique Identifier
+       */
+      id: number;
+      /**
+       * Date of creation
+       */
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
+      orderId: number;
+      receiptId: number;
+      takerAmount: string;
+      makerAddress: string;
+      isFeeOrder: boolean;
+      order: Order;
+      receipt: FillReceipt;
+    }
+
+    export interface FillReceipt {
+      /**
+       * Unique Identifier
+       */
+      id: number;
+      /**
+       * Date of creation
+       */
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
+      txHash: string;
+      taker: string;
+      status: string;
+      side: string;
+      takerAmount: string;
+      price: string;
+      baseAssetAddress: string;
+      baseSymbol: string;
+      quoteSymbol: string;
+      quoteAssetAddress: string;
+      feeAmount: string;
+      feeAssetAddress: string;
+      logs: FillReceiptLog[];
+    }
+
+    export interface IOrderCreationRequest {
+      /**
+       * Order maker
+       */
+      makerAddress: string;
+      /**
+       * Order taker; should generally be the null address (0x000...) in the case of ERC dEX
+       */
+      takerAddress: string;
+      /**
+       * Recipient of owed fees
+       */
+      feeRecipientAddress: string;
+      /**
+       * Required order sender
+       */
+      senderAddress: string;
+      /**
+       * Amount of maker token in trade
+       */
+      makerAssetAmount: string;
+      /**
+       * Amount of taker token in trade
+       */
+      takerAssetAmount: string;
+      /**
+       * Fee owed by maker
+       */
+      makerFee: string;
+      /**
+       * Fee owed by taker
+       */
+      takerFee: string;
+      /**
+       * Address of maker token
+       */
+      makerAssetData: string;
+      /**
+       * Address of taker token
+       */
+      takerAssetData: string;
+      /**
+       * Secure salt
+       */
+      salt: string;
+      /**
+       * Address of 0x exchange contract
+       */
+      exchangeAddress: string;
+      /**
+       * Unix timestamp when order expires
+       */
+      expirationTimeSeconds: string;
+      /**
+       * Secure EC Signature
+       */
+      signature: string;
+    }
+
+    export interface IOrderData {
+      order: Order;
+      remainingFillableAmount: string;
+    }
+
+    export interface IGetOrdersResponse {
+      total: number;
+      page: number;
+      per_page: number;
+      records: IOrderData[];
+    }
+
+    export interface IOrderConfig {
+      senderAddress: string;
+      feeRecipientAddress: string;
+      makerFee: string;
+      takerFee: string;
+    }
+
+    export interface IOrderbookSide {
+      total: number;
+      page: number;
+      per_page: number;
+      records: IOrderData[];
+    }
+
+    export interface IOrderbookResponse {
+      bids: IOrderbookSide;
+      asks: IOrderbookSide;
     }
 
     export interface IMarketOrderQuote {
@@ -447,17 +582,26 @@ PendingCancel (5)
       orders: Order[];
     }
 
-    export interface IMarketOrderQuantityRequest {
-      takerQuantity: string;
-      maker: string;
-      takerTokenAddress: string;
-      makerTokenAddress: string;
-      networkId: number;
+    export interface ICancelOrderResult {
+      orderHash: string;
+      success: boolean;
+      message: string;
     }
 
-    export interface ISoftCancelOrderRequest {
+    export interface ICancelOrderData {
+      /**
+       * Computed unique order hash
+       */
       orderHash: string;
+      /**
+       * Signed message indicating intent to cancel
+Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
+       */
       signature: string;
+    }
+
+    export interface ICancelOrdersRequest {
+      cancellations: ICancelOrderData[];
     }
 
     export interface IDateSummary {
@@ -470,7 +614,6 @@ PendingCancel (5)
     }
 
     export interface IHistoricalDataRequest {
-      networkId: number;
       baseTokenAddress: string;
       quoteTokenAddress: string;
       startDate: Date;
@@ -487,119 +630,6 @@ PendingCancel (5)
       weeklyPercentageChange: string;
       dailyVolume: string;
       priceEth: string;
-    }
-
-    export interface IStandardToken {
-      address: string;
-      minAmount: string;
-      maxAmount: string;
-      precision: number;
-    }
-
-    export interface IStandardTokenPair {
-      tokenA: IStandardToken;
-      tokenB: IStandardToken;
-    }
-
-    /**
-     * Elliptic Curve Digital Signature
-     */
-    export interface IEcSignature {
-      v: number;
-      r: string;
-      s: string;
-    }
-
-    export interface IStandardOrder {
-      exchangeContractAddress: string;
-      maker: string;
-      taker: string;
-      makerTokenAddress: string;
-      takerTokenAddress: string;
-      feeRecipient: string;
-      makerTokenAmount: string;
-      takerTokenAmount: string;
-      makerFee: string;
-      takerFee: string;
-      expirationUnixTimestampSec: string;
-      salt: string;
-      ecSignature: IEcSignature;
-      remainingTakerTokenAmount: string;
-      orderHash: string;
-      source: string;
-      price: string;
-    }
-
-    export interface IStandardFeeRequest {
-      maker: string;
-      taker: string;
-      exchangeContractAddress: string;
-      makerTokenAddress: string;
-      takerTokenAddress: string;
-      makerTokenAmount: string;
-      takerTokenAmount: string;
-      expirationUnixTimestampSec: string;
-      salt: string;
-    }
-
-    export interface IStandardOrderCreationRequest {
-      /**
-       * Order maker
-       */
-      maker: string;
-      /**
-       * Order taker; should generally be the null address (0x000...) in the case of ERC dEX
-       */
-      taker: string;
-      /**
-       * Amount of maker token in trade
-       */
-      makerTokenAmount: string;
-      /**
-       * Amount of taker token in trade
-       */
-      takerTokenAmount: string;
-      /**
-       * Fee owed by maker
-       */
-      makerFee: string;
-      /**
-       * Fee owed by taker
-       */
-      takerFee: string;
-      /**
-       * Address of maker token
-       */
-      makerTokenAddress: string;
-      /**
-       * Address of taker token
-       */
-      takerTokenAddress: string;
-      /**
-       * Secure salt
-       */
-      salt: string;
-      /**
-       * Recipient of owed fees
-       */
-      feeRecipient: string;
-      /**
-       * Address of 0x exchange contract
-       */
-      exchangeContractAddress: string;
-      /**
-       * Unix timestamp when order expires
-       */
-      expirationUnixTimestampSec: string;
-      /**
-       * Secure EC Signature
-       */
-      ecSignature: IEcSignature;
-    }
-
-    export interface IStandardOrderbook {
-      bids: IStandardOrder[];
-      asks: IStandardOrder[];
     }
 
     export interface IGlobalTickerRecord {
@@ -653,20 +683,91 @@ PendingCancel (5)
       timestamp: number;
     }
 
-    export interface IToken {
-      name: string;
-      address: string;
-      symbol: string;
-      decimals: number;
+    export interface IFillRequest {
+      /**
+       * ID of a provided quote
+       */
+      quoteId: number;
+      /**
+       * Signed transaction hash
+       */
+      signature: string;
     }
 
-    export interface ITokenPair {
-      tokenA: IToken;
-      tokenB: IToken;
-      minimumQuantity: string;
-      priceDecimals: number;
-      baseVolume: string;
-      quoteVolume: string;
+    export interface IExtendedOrderFill {
+      /**
+       * Computed hash verifying the authenticity of the order
+       */
+      orderHash: string;
+      /**
+       * Taker amount in base units to fill from this order
+       */
+      takerAmount: string;
+      order: Order;
+    }
+
+    export interface IFillQuote {
+      /**
+       * Unique quote identifier
+       */
+      id: number;
+      /**
+       * Collection of fills
+       */
+      fills: IExtendedOrderFill[];
+      /**
+       * Unique salt
+       */
+      salt: string;
+      /**
+       * Pre-calculated hex to sign
+       */
+      hex: string;
+      /**
+       * Order taker
+       */
+      taker: string;
+      /**
+       * Unique identifier of the order for paying fees, if applicable
+       */
+      feeOrderId: number;
+      /**
+       * Trade token pair
+       */
+      tokenPair: ITokenPair;
+      /**
+       * Computed average price
+       */
+      price: string;
+    }
+
+    export interface IOrderFill {
+      /**
+       * Computed hash verifying the authenticity of the order
+       */
+      orderHash: string;
+      /**
+       * Taker amount in base units to fill from this order
+       */
+      takerAmount: string;
+    }
+
+    export interface IRequestFillRequest {
+      /**
+       * Account requesting the trade
+       */
+      taker: string;
+      /**
+       * Collection of trade requests
+       */
+      fills: IOrderFill[];
+    }
+
+    export interface IGetReceiptsResponse {
+      total: number;
+      page: number;
+      per_page: number;
+      records: FillReceipt[];
     }
 
     export interface TradeHistoryLog {
@@ -691,27 +792,21 @@ PendingCancel (5)
        */
       txHash: string;
       /**
-       * Ethereum Network
-Mainnet: 1
-Kovan: 42
-       */
-      networkId: number;
-      /**
        * Address of order maker
        */
-      maker: string;
+      makerAddress: string;
       /**
        * Address of order taker
        */
-      taker: string;
+      takerAddress: string;
       /**
        * Address of order feeRecipient
        */
-      feeRecipient: string;
+      feeRecipientAddress: string;
       /**
        * Address of maker token
        */
-      makerTokenAddress: string;
+      makerAssetAddress: string;
       /**
        * Symbol of maker token
        */
@@ -731,7 +826,7 @@ Kovan: 42
       /**
        * Address of taker token
        */
-      takerTokenAddress: string;
+      takerAssetAddress: string;
       /**
        * Symbol of taker token
        */
@@ -807,71 +902,114 @@ Kovan: 42
       records: TradeHistoryLog[];
     }
 
-    export interface IClaimTransactionRequest {
-      networkId: number;
-      txHash: string;
-      accountId?: number;
-    }
-
 
     export interface IAggregatedOrdersGetParams {
-      networkId: number;
-      baseTokenAddress: string;
-      quoteTokenAddress: string;
+      baseSymbol: string;
+      quoteSymbol: string;
     }
 
-    export interface IFeesGetParams {
-      makerTokenAddress: string;
-      takerTokenAddress: string;
-      makerTokenAmount: string;
-      takerTokenAmount: string;
-      maker: string;
-      taker: string;
-      networkId: number;
-    }
-
-    export interface IFeesGetFeeRecipientsParams {
-      networkId: number;
+    export interface IAssetPairsGetParams {
+      page?: number;
+      per_page?: number;
     }
 
     export interface INotificationsGetParams {
       account: string;
     }
 
-    export interface IOrdersGetParams {
-      /**
-       * ID of Ethereum Network
-       */
-      networkId: number;
-      /**
-       * Address of maker token
-       */
-      makerTokenAddress?: string;
-      /**
-       * Address of taker token
-       */
-      takerTokenAddress?: string;
-      /**
-       * Use ascending sort order
-       */
-      isAscending?: boolean;
-      /**
-       * Sort order: price or dateCreated
-       */
-      sortOrder?: string;
-      /**
-       * Address of maker
-       */
-      maker?: string;
-      /**
-       * Include orders from other relayers
-       */
-      includeExternal?: boolean;
-      isOpen?: boolean;
+    export interface IOrdersCreateOrderParams {
+      request: IOrderCreationRequest;
     }
 
-    export interface IOrdersGetByIdParams {
-      orderId: number;
+    export interface IOrdersGetParams {
+      /**
+       * Include orders that are open; if false, only closed orders are returned
+       */
+      open?: boolean;
+      /**
+       * Page number
+       */
+      page?: number;
+      /**
+       * Page size
+       */
+      per_page?: number;
+      /**
+       * 0x contract exchange address
+       */
+      exchangeAddress?: string;
+      /**
+       * Fee recipient address
+       */
+      feeRecipientAddress?: string;
+      /**
+       * Encoded taker asset data
+       */
+      takerAssetData?: string;
+      /**
+       * Encoded maker asset data
+       */
+      makerAssetData?: string;
+      /**
+       * Designated address to execute orders
+       */
+      senderAddress?: string;
+      /**
+       * Encoded asset data (could be maker or taker)
+       */
+      traderAssetData?: string;
+      /**
+       * Trader address (could be makerAddress or takerAddress)
+       */
+      traderAddress?: string;
+      /**
+       * Taker asset type (only ERC20 supported)
+       */
+      takerAssetType?: string;
+      /**
+       * Token address of taker asset
+       */
+      takerAssetAddress?: string;
+      /**
+       * Address of order taker
+       */
+      takerAddress?: string;
+      /**
+       * Maker asset type (only ERC20 supported)
+       */
+      makerAssetType?: string;
+      /**
+       * Token address of maker asset
+       */
+      makerAssetAddress?: string;
+      /**
+       * Address of order maker
+       */
+      makerAddress?: string;
+    }
+
+    export interface IOrdersGetOrderByHashParams {
+      /**
+       * Hex format hash of order parameters
+       */
+      orderHash: string;
+    }
+
+    export interface IOrdersGetOrderConfigParams {
+      makerAddress: string;
+      takerAddress: string;
+      makerAssetAmount: string;
+      takerAssetAmount: string;
+      makerAssetData: string;
+      takerAssetData: string;
+      exchangeAddress: string;
+    }
+
+    export interface IOrdersGetOrderbookParams {
+      baseAssetData: string;
+      quoteAssetData: string;
+      per_page?: number;
+      page?: number;
     }
 
     export interface IOrdersGetBestParams {
@@ -892,82 +1030,20 @@ Kovan: 42
        */
       quantity: string;
       /**
-       * ID of Ethereum network
-       */
-      networkId: number;
-      /**
        * Address of order taker
        */
       takerAddress: string;
     }
 
-    export interface IOrdersGetMarketQuantityParams {
-      params: IMarketOrderQuantityRequest;
-    }
-
-    export interface IOrdersSoftCancelOrderParams {
-      request: ISoftCancelOrderRequest;
+    export interface IOrdersCancelParams {
+      request: ICancelOrdersRequest;
     }
 
     export interface IReportsGetHistoricalParams {
       request: IHistoricalDataRequest;
     }
 
-    export interface IStandardGetTokenPairsParams {
-      networkId: number;
-      per_page?: number;
-      page?: number;
-    }
-
-    export interface IStandardGetOrdersParams {
-      networkId: number;
-      per_page?: number;
-      page?: number;
-      exchangeContractAddress?: string;
-      tokenAddress?: string;
-      makerTokenAddress?: string;
-      takerTokenAddress?: string;
-      maker?: string;
-      taker?: string;
-      trader?: string;
-      feeRecipient?: string;
-      source?: string;
-    }
-
-    export interface IStandardGetOrderByHashParams {
-      networkId: number;
-      orderHash: string;
-    }
-
-    export interface IStandardGetFeesParams {
-      networkId: number;
-      request: IStandardFeeRequest;
-    }
-
-    export interface IStandardCreateParams {
-      networkId: number;
-      request: IStandardOrderCreationRequest;
-    }
-
-    export interface IStandardGetOrderbookParams {
-      networkId: number;
-      baseTokenAddress: string;
-      quoteTokenAddress: string;
-      per_page?: number;
-      page?: number;
-      /**
-       * Origin of order. Possible values: &#x27;ercdex&#x27; | &#x27;radar-relay&#x27; | &#x27;all&#x27;
-       */
-      source?: string;
-    }
-
     export interface ITickerGetParams {
-      /**
-       * Ethereum Network ID
-1 (mainnet - default)
-42 (kovan/testnet)
-       */
-      networkId?: number;
       /**
        * Granularity of results
 24h (1 day)
@@ -977,20 +1053,38 @@ Kovan: 42
       granularity?: string;
     }
 
-    export interface ITokenPairsGetParams {
+    export interface ITradeFillParams {
+      request: IFillRequest;
+    }
+
+    export interface ITradeRequestFillParams {
+      request: IRequestFillRequest;
+    }
+
+    export interface ITradeGetReceiptParams {
+      id: number;
+    }
+
+    export interface ITradeGetReceiptsParams {
       /**
-       * ID of Ethereum network
+       * Page
        */
-      networkId: number;
+      page?: number;
+      /**
+       * Page size
+       */
+      per_page?: number;
+      /**
+       * Optionally provide wallet address of receipt recipient
+       */
+      taker_address?: string;
+      /**
+       * The token pair in the format BASE/QUOTE, e.g. ZRX/WETH
+       */
+      pair?: string;
     }
 
     export interface ITradeHistoryLogsGetParams {
-      /**
-       * Ethereum Network ID (default: 1)
-Mainnet: 1
-Kovan: 42
-       */
-      network_id?: number;
       /**
        * Page number (default: 1)
        */
@@ -1085,15 +1179,6 @@ example: ZRX/WETH
        */
       pair?: string;
     }
-
-    export interface ITransactionClaimsClaimParams {
-      request: IClaimTransactionRequest;
-    }
-
-    export interface ITransactionClaimsReportParams {
-      txHash: string;
-      networkId: number;
-    }
     export interface IAggregatedOrdersService {
 
       get(params: IAggregatedOrdersGetParams, headers?: IAdditionalHeaders): Promise<IAggregatedOrderData>;
@@ -1108,63 +1193,46 @@ example: ZRX/WETH
         };
 
         requestParams.queryParameters = {
-          networkId: params.networkId,
-          baseTokenAddress: params.baseTokenAddress,
-          quoteTokenAddress: params.quoteTokenAddress,
+          baseSymbol: params.baseSymbol,
+          quoteSymbol: params.quoteSymbol,
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IAggregatedOrderData>(requestParams, headers);
       }
     }
-    export interface IFeesService {
+    export interface IAssetPairsService {
 
       /**
-       * Get fees for an order of described parameters
+       * Get a list of supported asset pairs
        */
-      get(params: IFeesGetParams, headers?: IAdditionalHeaders): Promise<IFees>;
-
-      getFeeRecipients(params: IFeesGetFeeRecipientsParams, headers?: IAdditionalHeaders): Promise<any[]>;
+      get(params: IAssetPairsGetParams, headers?: IAdditionalHeaders): Promise<IGetAssetPairsResponse>;
     }
 
-    export class FeesService extends ApiService implements IFeesService {
+    export class AssetPairsService extends ApiService implements IAssetPairsService {
 
       /**
-       * Get fees for an order of described parameters
+       * Get a list of supported asset pairs
        */
-      public async get(params: IFeesGetParams, headers?: IAdditionalHeaders) {
+      public async get(params: IAssetPairsGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
-          method: 'POST',
-          url: `${baseApiUrl}/api/fees`
+          method: 'GET',
+          url: `${baseApiUrl}/api/v1/asset_pairs`
         };
 
         requestParams.queryParameters = {
-          makerTokenAddress: params.makerTokenAddress,
-          takerTokenAddress: params.takerTokenAddress,
-          makerTokenAmount: params.makerTokenAmount,
-          takerTokenAmount: params.takerTokenAmount,
-          maker: params.maker,
-          taker: params.taker,
-          networkId: params.networkId,
+          page: params.page,
+          per_page: params.per_page,
         };
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IFees>(requestParams, headers);
-      }
-
-      public async getFeeRecipients(params: IFeesGetFeeRecipientsParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'GET',
-          url: `${baseApiUrl}/api/fees/recipients/${params.networkId}`
-        };
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<any[]>(requestParams, headers);
+        return this.executeRequest<IGetAssetPairsResponse>(requestParams, headers);
       }
     }
     export interface INetworksService {
 
       /**
-       * Get a list of supported networks
+       * Get supported network info
        */
-      getSupported(headers?: IAdditionalHeaders): Promise<INetwork[]>;
+      getSupportedNetwork(headers?: IAdditionalHeaders): Promise<INetwork>;
 
       /**
        * Determine if app is in maintenance mode
@@ -1175,15 +1243,15 @@ example: ZRX/WETH
     export class NetworksService extends ApiService implements INetworksService {
 
       /**
-       * Get a list of supported networks
+       * Get supported network info
        */
-      public async getSupported(headers?: IAdditionalHeaders) {
+      public async getSupportedNetwork(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
           url: `${baseApiUrl}/api/networks`
         };
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<INetwork[]>(requestParams, headers);
+        return this.executeRequest<INetwork>(requestParams, headers);
       }
 
       /**
@@ -1227,59 +1295,127 @@ example: ZRX/WETH
     export interface IOrdersService {
 
       /**
-       * Get list of orders
+       * Submit a signed order
        */
-      get(params: IOrdersGetParams, headers?: IAdditionalHeaders): Promise<Order[]>;
+      createOrder(params: IOrdersCreateOrderParams, headers?: IAdditionalHeaders): Promise<Order>;
 
-      getById(params: IOrdersGetByIdParams, headers?: IAdditionalHeaders): Promise<Order>;
+      /**
+       * Get a list of orders
+       */
+      get(params: IOrdersGetParams, headers?: IAdditionalHeaders): Promise<IGetOrdersResponse>;
+
+      /**
+       * Get a single order by hash
+       */
+      getOrderByHash(params: IOrdersGetOrderByHashParams, headers?: IAdditionalHeaders): Promise<IOrderData>;
+
+      getOrderConfig(params: IOrdersGetOrderConfigParams, headers?: IAdditionalHeaders): Promise<IOrderConfig>;
+
+      getOrderbook(params: IOrdersGetOrderbookParams, headers?: IAdditionalHeaders): Promise<IOrderbookResponse>;
 
       /**
        * Get the order(s) representing the best market price
        */
       getBest(params: IOrdersGetBestParams, headers?: IAdditionalHeaders): Promise<IMarketOrderQuote>;
 
-      getMarketQuantity(params: IOrdersGetMarketQuantityParams, headers?: IAdditionalHeaders): Promise<string>;
-
       /**
-       * Removes the order from the order book with a valid signature
-Technically can still be filled by someone if they have the order cached elsewhere -
-Do on-chain cancellation for permanent cancelation
+       * Cancel one or more orders
        */
-      softCancelOrder(params: IOrdersSoftCancelOrderParams, headers?: IAdditionalHeaders): Promise<void>;
+      cancel(params: IOrdersCancelParams, headers?: IAdditionalHeaders): Promise<ICancelOrderResult[]>;
     }
 
     export class OrdersService extends ApiService implements IOrdersService {
 
       /**
-       * Get list of orders
+       * Submit a signed order
+       */
+      public async createOrder(params: IOrdersCreateOrderParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'POST',
+          url: `${baseApiUrl}/api/v1/orders`
+        };
+
+        requestParams.body = params.request;
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<Order>(requestParams, headers);
+      }
+
+      /**
+       * Get a list of orders
        */
       public async get(params: IOrdersGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/orders`
+          url: `${baseApiUrl}/api/v1/orders`
         };
 
         requestParams.queryParameters = {
-          networkId: params.networkId,
-          makerTokenAddress: params.makerTokenAddress,
-          takerTokenAddress: params.takerTokenAddress,
-          isAscending: params.isAscending,
-          sortOrder: params.sortOrder,
-          maker: params.maker,
-          includeExternal: params.includeExternal,
-          isOpen: params.isOpen,
+          open: params.open,
+          page: params.page,
+          per_page: params.per_page,
+          exchangeAddress: params.exchangeAddress,
+          feeRecipientAddress: params.feeRecipientAddress,
+          takerAssetData: params.takerAssetData,
+          makerAssetData: params.makerAssetData,
+          senderAddress: params.senderAddress,
+          traderAssetData: params.traderAssetData,
+          traderAddress: params.traderAddress,
+          takerAssetType: params.takerAssetType,
+          takerAssetAddress: params.takerAssetAddress,
+          takerAddress: params.takerAddress,
+          makerAssetType: params.makerAssetType,
+          makerAssetAddress: params.makerAssetAddress,
+          makerAddress: params.makerAddress,
         };
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<Order[]>(requestParams, headers);
+        return this.executeRequest<IGetOrdersResponse>(requestParams, headers);
       }
 
-      public async getById(params: IOrdersGetByIdParams, headers?: IAdditionalHeaders) {
+      /**
+       * Get a single order by hash
+       */
+      public async getOrderByHash(params: IOrdersGetOrderByHashParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/orders/by_id/${params.orderId}`
+          url: `${baseApiUrl}/api/v1/order/${params.orderHash}`
         };
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<Order>(requestParams, headers);
+        return this.executeRequest<IOrderData>(requestParams, headers);
+      }
+
+      public async getOrderConfig(params: IOrdersGetOrderConfigParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'GET',
+          url: `${baseApiUrl}/api/v1/order_config`
+        };
+
+        requestParams.queryParameters = {
+          makerAddress: params.makerAddress,
+          takerAddress: params.takerAddress,
+          makerAssetAmount: params.makerAssetAmount,
+          takerAssetAmount: params.takerAssetAmount,
+          makerAssetData: params.makerAssetData,
+          takerAssetData: params.takerAssetData,
+          exchangeAddress: params.exchangeAddress,
+        };
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<IOrderConfig>(requestParams, headers);
+      }
+
+      public async getOrderbook(params: IOrdersGetOrderbookParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'GET',
+          url: `${baseApiUrl}/api/v1/orderbook`
+        };
+
+        requestParams.queryParameters = {
+          baseAssetData: params.baseAssetData,
+          quoteAssetData: params.quoteAssetData,
+          per_page: params.per_page,
+          page: params.page,
+        };
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<IOrderbookResponse>(requestParams, headers);
       }
 
       /**
@@ -1288,7 +1424,7 @@ Do on-chain cancellation for permanent cancelation
       public async getBest(params: IOrdersGetBestParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/orders/best`
+          url: `${baseApiUrl}/api/v1/best`
         };
 
         requestParams.queryParameters = {
@@ -1296,38 +1432,24 @@ Do on-chain cancellation for permanent cancelation
           takerTokenAddress: params.takerTokenAddress,
           baseTokenAddress: params.baseTokenAddress,
           quantity: params.quantity,
-          networkId: params.networkId,
           takerAddress: params.takerAddress,
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IMarketOrderQuote>(requestParams, headers);
       }
 
-      public async getMarketQuantity(params: IOrdersGetMarketQuantityParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'POST',
-          url: `${baseApiUrl}/api/orders/market-quantity`
-        };
-
-        requestParams.body = params.params;
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<string>(requestParams, headers);
-      }
-
       /**
-       * Removes the order from the order book with a valid signature
-Technically can still be filled by someone if they have the order cached elsewhere -
-Do on-chain cancellation for permanent cancelation
+       * Cancel one or more orders
        */
-      public async softCancelOrder(params: IOrdersSoftCancelOrderParams, headers?: IAdditionalHeaders) {
+      public async cancel(params: IOrdersCancelParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'POST',
-          url: `${baseApiUrl}/api/orders/soft-cancel`
+          url: `${baseApiUrl}/api/v1/orders/cancel`
         };
 
         requestParams.body = params.request;
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<void>(requestParams, headers);
+        return this.executeRequest<ICancelOrderResult[]>(requestParams, headers);
       }
     }
     export interface IReportsService {
@@ -1365,114 +1487,6 @@ Do on-chain cancellation for permanent cancelation
         return this.executeRequest<ITokenTicker[]>(requestParams, headers);
       }
     }
-    export interface IStandardService {
-
-      getTokenPairs(params: IStandardGetTokenPairsParams, headers?: IAdditionalHeaders): Promise<IStandardTokenPair[]>;
-
-      getOrders(params: IStandardGetOrdersParams, headers?: IAdditionalHeaders): Promise<IStandardOrder[]>;
-
-      getOrderByHash(params: IStandardGetOrderByHashParams, headers?: IAdditionalHeaders): Promise<IStandardOrder>;
-
-      getFees(params: IStandardGetFeesParams, headers?: IAdditionalHeaders): Promise<IFees>;
-
-      /**
-       * Create an order
-       */
-      create(params: IStandardCreateParams, headers?: IAdditionalHeaders): Promise<Order>;
-
-      getOrderbook(params: IStandardGetOrderbookParams, headers?: IAdditionalHeaders): Promise<IStandardOrderbook>;
-    }
-
-    export class StandardService extends ApiService implements IStandardService {
-
-      public async getTokenPairs(params: IStandardGetTokenPairsParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'GET',
-          url: `${baseApiUrl}/api/standard/${params.networkId}/v0/token_pairs`
-        };
-
-        requestParams.queryParameters = {
-          per_page: params.per_page,
-          page: params.page,
-        };
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IStandardTokenPair[]>(requestParams, headers);
-      }
-
-      public async getOrders(params: IStandardGetOrdersParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'GET',
-          url: `${baseApiUrl}/api/standard/${params.networkId}/v0/orders`
-        };
-
-        requestParams.queryParameters = {
-          per_page: params.per_page,
-          page: params.page,
-          exchangeContractAddress: params.exchangeContractAddress,
-          tokenAddress: params.tokenAddress,
-          makerTokenAddress: params.makerTokenAddress,
-          takerTokenAddress: params.takerTokenAddress,
-          maker: params.maker,
-          taker: params.taker,
-          trader: params.trader,
-          feeRecipient: params.feeRecipient,
-          source: params.source,
-        };
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IStandardOrder[]>(requestParams, headers);
-      }
-
-      public async getOrderByHash(params: IStandardGetOrderByHashParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'GET',
-          url: `${baseApiUrl}/api/standard/${params.networkId}/v0/order/${params.orderHash}`
-        };
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IStandardOrder>(requestParams, headers);
-      }
-
-      public async getFees(params: IStandardGetFeesParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'POST',
-          url: `${baseApiUrl}/api/standard/${params.networkId}/v0/fees`
-        };
-
-        requestParams.body = params.request;
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IFees>(requestParams, headers);
-      }
-
-      /**
-       * Create an order
-       */
-      public async create(params: IStandardCreateParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'POST',
-          url: `${baseApiUrl}/api/standard/${params.networkId}/v0/order`
-        };
-
-        requestParams.body = params.request;
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<Order>(requestParams, headers);
-      }
-
-      public async getOrderbook(params: IStandardGetOrderbookParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'GET',
-          url: `${baseApiUrl}/api/standard/${params.networkId}/v0/orderbook`
-        };
-
-        requestParams.queryParameters = {
-          baseTokenAddress: params.baseTokenAddress,
-          quoteTokenAddress: params.quoteTokenAddress,
-          per_page: params.per_page,
-          page: params.page,
-          source: params.source,
-        };
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IStandardOrderbook>(requestParams, headers);
-      }
-    }
     export interface ITickerService {
 
       get(params: ITickerGetParams, headers?: IAdditionalHeaders): Promise<IGlobalTickerRecord[]>;
@@ -1487,33 +1501,88 @@ Do on-chain cancellation for permanent cancelation
         };
 
         requestParams.queryParameters = {
-          networkId: params.networkId,
           granularity: params.granularity,
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IGlobalTickerRecord[]>(requestParams, headers);
       }
     }
-    export interface ITokenPairsService {
+    export interface ITradeService {
 
       /**
-       * Get a list of supported token pairs
+       * Redeem a signed quote (see RequestFill to receive a quote)
        */
-      get(params: ITokenPairsGetParams, headers?: IAdditionalHeaders): Promise<ITokenPair[]>;
+      fill(params: ITradeFillParams, headers?: IAdditionalHeaders): Promise<FillReceipt>;
+
+      /**
+       * Request to fill an order; returns a quote payload that can be signed and redeemed to begin execution
+       */
+      requestFill(params: ITradeRequestFillParams, headers?: IAdditionalHeaders): Promise<IFillQuote>;
+
+      /**
+       * Get a receipt of an attempted fill
+       */
+      getReceipt(params: ITradeGetReceiptParams, headers?: IAdditionalHeaders): Promise<FillReceipt>;
+
+      getReceipts(params: ITradeGetReceiptsParams, headers?: IAdditionalHeaders): Promise<IGetReceiptsResponse>;
     }
 
-    export class TokenPairsService extends ApiService implements ITokenPairsService {
+    export class TradeService extends ApiService implements ITradeService {
 
       /**
-       * Get a list of supported token pairs
+       * Redeem a signed quote (see RequestFill to receive a quote)
        */
-      public async get(params: ITokenPairsGetParams, headers?: IAdditionalHeaders) {
+      public async fill(params: ITradeFillParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'POST',
+          url: `${baseApiUrl}/api/v1/trade/fill`
+        };
+
+        requestParams.body = params.request;
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<FillReceipt>(requestParams, headers);
+      }
+
+      /**
+       * Request to fill an order; returns a quote payload that can be signed and redeemed to begin execution
+       */
+      public async requestFill(params: ITradeRequestFillParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'POST',
+          url: `${baseApiUrl}/api/v1/trade/request_fill`
+        };
+
+        requestParams.body = params.request;
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<IFillQuote>(requestParams, headers);
+      }
+
+      /**
+       * Get a receipt of an attempted fill
+       */
+      public async getReceipt(params: ITradeGetReceiptParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/token-pairs/${params.networkId}`
+          url: `${baseApiUrl}/api/v1/trade/receipt/${params.id}`
         };
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<ITokenPair[]>(requestParams, headers);
+        return this.executeRequest<FillReceipt>(requestParams, headers);
+      }
+
+      public async getReceipts(params: ITradeGetReceiptsParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'GET',
+          url: `${baseApiUrl}/api/v1/trade/receipts`
+        };
+
+        requestParams.queryParameters = {
+          page: params.page,
+          per_page: params.per_page,
+          taker_address: params.taker_address,
+          pair: params.pair,
+        };
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<IGetReceiptsResponse>(requestParams, headers);
       }
     }
     export interface ITradeHistoryLogsService {
@@ -1530,7 +1599,6 @@ Do on-chain cancellation for permanent cancelation
         };
 
         requestParams.queryParameters = {
-          network_id: params.network_id,
           page: params.page,
           per_page: params.per_page,
           sort_order: params.sort_order,
@@ -1557,46 +1625,6 @@ Do on-chain cancellation for permanent cancelation
         return this.executeRequest<IGetTradeHistoryLogsResponse>(requestParams, headers);
       }
     }
-    export interface ITransactionClaimsService {
-
-      claim(params: ITransactionClaimsClaimParams, headers?: IAdditionalHeaders): Promise<void>;
-
-      /**
-       * Report a transaction from the UI
-       */
-      report(params: ITransactionClaimsReportParams, headers?: IAdditionalHeaders): Promise<void>;
-    }
-
-    export class TransactionClaimsService extends ApiService implements ITransactionClaimsService {
-
-      public async claim(params: ITransactionClaimsClaimParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'POST',
-          url: `${baseApiUrl}/api/transaction-claims`
-        };
-
-        requestParams.body = params.request;
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<void>(requestParams, headers);
-      }
-
-      /**
-       * Report a transaction from the UI
-       */
-      public async report(params: ITransactionClaimsReportParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'GET',
-          url: `${baseApiUrl}/api/transaction-claims/report`
-        };
-
-        requestParams.queryParameters = {
-          txHash: params.txHash,
-          networkId: params.networkId,
-        };
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<void>(requestParams, headers);
-      }
-    }
   }
 
   /**
@@ -1610,8 +1638,8 @@ Do on-chain cancellation for permanent cancelation
 */
 
 export interface IPairOrderChangeEventParams {
-  makerTokenAddress: string;
-  takerTokenAddress: string;
+  baseSymbol: string;
+  quoteSymbol: string;
   
 }
 /**
@@ -1623,7 +1651,6 @@ export interface IPairOrderChangeEventParams {
 export interface IOrderChangeEventData {
   order: Order;
   eventType: ("canceled" | "created" | "expired" | "filled" | "partially-filled" | "removed");
-  reason?: string;
   
 }
 /**
@@ -1635,25 +1662,21 @@ export interface Order {
    */
   dateClosed?: string;
   /**
-   * ID of the Ethereum network the order is associated with
-   */
-  networkId: number;
-  /**
    * 0x Exchange Contract Address
    */
-  exchangeContractAddress: string;
+  exchangeAddress: string;
   /**
    * Unix timestamp of order expiration (in seconds)
    */
-  expirationUnixTimestampSec: number;
+  expirationTimeSeconds: string;
   /**
    * Address of the fee recipient
    */
-  feeRecipient: string;
+  feeRecipientAddress: string;
   /**
    * Address of the order maker
    */
-  maker: string;
+  makerAddress: string;
   /**
    * Fee due from maker on order fill
    */
@@ -1661,11 +1684,19 @@ export interface Order {
   /**
    * Token address of the maker token
    */
-  makerTokenAddress: string;
+  makerAssetAddress: string;
+  /**
+   * Encoded maker asset data
+   */
+  makerAssetData: string;
+  /**
+   * Encoded taker asset data
+   */
+  takerAssetData: string;
   /**
    * Total amount of maker token in order
    */
-  makerTokenAmount: string;
+  makerAssetAmount: string;
   /**
    * Secure salt
    */
@@ -1673,11 +1704,11 @@ export interface Order {
   /**
    * Serialized version of the EC signature for signed orders
    */
-  serializedEcSignature: string;
+  signature: string;
   /**
    * Taker address; generally a null taker
    */
-  taker: string;
+  takerAddress: string;
   /**
    * Fee due from taker on order fill
    */
@@ -1685,15 +1716,15 @@ export interface Order {
   /**
    * Token address of the taker token
    */
-  takerTokenAddress: string;
+  takerAssetAddress: string;
   /**
    * Total amount of taker token in order
    */
-  takerTokenAmount: string;
+  takerAssetAmount: string;
   /**
-   * Remaining amount in the order in terms of taker token units
+   * Remaining amount that can be filled in taker tokens
    */
-  remainingTakerTokenAmount: string;
+  remainingFillableAmount: string;
   /**
    * The hash of the signed order
    */
@@ -1704,13 +1735,14 @@ export interface Order {
   accountId?: number;
   /**
    * State of the order: Open (0), Canceled (1),
-   * Filled (2), Expired(3), Removed(4),
-   * PendingCancel (5)
+   * Filled (2), Expired(3), Removed(4)
    */
   state: number;
-  source: string;
   price: string;
+  senderAddress: string;
+  system: boolean;
   account?: Account;
+  fillReceiptLogs: FillReceiptLog[];
   /**
    * Unique Identifier
    */
@@ -1809,7 +1841,6 @@ export interface RebateContract {
   principal: string;
   partner: string;
   referrer?: string;
-  networkId: number;
   accountId: number;
   account: Account;
   /**
@@ -1852,9 +1883,58 @@ export interface ApiKey {
 }
 export interface TransactionClaim {
   txHash: string;
-  networkId: number;
   accountId: number;
   account: Account;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface FillReceiptLog {
+  orderId: number;
+  receiptId: number;
+  takerAmount: string;
+  makerAddress: string;
+  isFeeOrder: boolean;
+  order: Order;
+  receipt: FillReceipt;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface FillReceipt {
+  txHash: string;
+  taker: string;
+  status: ("error" | "pending" | "success");
+  side: ("buy" | "sell");
+  takerAmount: string;
+  price: string;
+  baseAssetAddress: string;
+  baseSymbol: string;
+  quoteSymbol: string;
+  quoteAssetAddress: string;
+  feeAmount: string;
+  feeAssetAddress: string;
+  logs: FillReceiptLog[];
   /**
    * Unique Identifier
    */
@@ -1968,8 +2048,8 @@ export interface ITokenTicker {
 */
 
 export interface IAggregatedOrderFeedParams {
-  baseTokenAddress: string;
-  quoteTokenAddress: string;
+  baseSymbol: string;
+  quoteSymbol: string;
   
 }
 /**
@@ -1979,8 +2059,8 @@ export interface IAggregatedOrderFeedParams {
 */
 
 export interface IAggregatedOrderFeedData {
-  baseTokenAddress: string;
-  quoteTokenAddress: string;
+  baseSymbol: string;
+  quoteSymbol: string;
   sells: IOrderBookListing;
   buys: IOrderBookListing;
   
@@ -2001,8 +2081,7 @@ export interface IPriceLevel {
 * and run json-schema-to-typescript to regenerate this file.
 */
 
-export interface IAccountTradeHistoryParams {
-  networkId: number;
+export interface IAccountReceiptChangeParams {
   account: string;
   
 }
@@ -2012,278 +2091,25 @@ export interface IAccountTradeHistoryParams {
 * and run json-schema-to-typescript to regenerate this file.
 */
 
-export interface IAccountTradeHistoryData {
-  log: TradeHistoryLog;
+export interface IFillReceiptChangeData {
+  eventType: ("create" | "error" | "success");
+  receipt: FillReceipt;
   
 }
-export interface TradeHistoryLog {
-  /**
-   * Unique, generated hash representing 0x order
-   */
-  orderHash: string;
-  /**
-   * Transaction Hash
-   */
+export interface FillReceipt {
   txHash: string;
-  /**
-   * Ethereum Network
-   * Mainnet: 1
-   * Kovan: 42
-   */
-  networkId: number;
-  /**
-   * Address of order maker
-   */
-  maker: string;
-  /**
-   * Address of order taker
-   */
   taker: string;
-  /**
-   * Address of order feeRecipient
-   */
-  feeRecipient: string;
-  /**
-   * Address of maker token
-   */
-  makerTokenAddress: string;
-  /**
-   * Symbol of maker token
-   */
-  makerTokenSymbol: string;
-  /**
-   * Name of maker token
-   */
-  makerTokenName: string;
-  /**
-   * Decimals of maker token
-   */
-  makerTokenDecimals: number;
-  /**
-   * Unit price of maker token in USD
-   */
-  makerTokenUsdPrice: string;
-  /**
-   * Address of taker token
-   */
-  takerTokenAddress: string;
-  /**
-   * Symbol of taker token
-   */
-  takerTokenSymbol: string;
-  /**
-   * Name of taker token
-   */
-  takerTokenName: string;
-  takerTokenDecimals: number;
-  /**
-   * Unit price of taker token in USD
-   */
-  takerTokenUsdPrice: string;
-  /**
-   * Base amount of maker token filled in trade
-   */
-  filledMakerTokenAmount: string;
-  /**
-   * Unit amount of maker token filled in trade (adjusted for token decimals)
-   */
-  filledMakerTokenUnitAmount: string;
-  /**
-   * USD value of maker amount
-   */
-  filledMakerTokenAmountUsd: string;
-  /**
-   * Base amount of taker token filled in trade
-   */
-  filledTakerTokenAmount: string;
-  /**
-   * Unit amount of taker token filled in trade (adjusted for token decimals)
-   */
-  filledTakerTokenUnitAmount: string;
-  /**
-   * USD value of taker amount
-   */
-  filledTakerTokenAmountUsd: string;
-  /**
-   * Base amount of ZRX fees collected from maker
-   */
-  paidMakerFeeAmount: string;
-  /**
-   * Unit amount of ZRX fees collected from maker
-   */
-  paidMakerFeeUnitAmount: string;
-  /**
-   * USD value of maker fee
-   */
-  paidMakerFeeUsd: string;
-  /**
-   * Base amount of ZRX fees collected from taker
-   */
-  paidTakerFeeAmount: string;
-  /**
-   * Unit amount of ZRX fees collected from taker
-   */
-  paidTakerFeeUnitAmount: string;
-  /**
-   * USD value of taker fee
-   */
-  paidTakerFeeUsd: string;
-  /**
-   * Name of originating relayer (if known)
-   */
-  relayer: string;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-/**
-* This file was automatically generated by json-schema-to-typescript.
-* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
-* and run json-schema-to-typescript to regenerate this file.
-*/
-
-export interface IPairTradeHistoryParams {
-  networkId: number;
+  status: ("error" | "pending" | "success");
+  side: ("buy" | "sell");
+  takerAmount: string;
+  price: string;
+  baseAssetAddress: string;
   baseSymbol: string;
   quoteSymbol: string;
-  
-}
-/**
-* This file was automatically generated by json-schema-to-typescript.
-* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
-* and run json-schema-to-typescript to regenerate this file.
-*/
-
-export interface IPairTradeHistoryData {
-  log: TradeHistoryLog;
-  
-}
-export interface TradeHistoryLog {
-  /**
-   * Unique, generated hash representing 0x order
-   */
-  orderHash: string;
-  /**
-   * Transaction Hash
-   */
-  txHash: string;
-  /**
-   * Ethereum Network
-   * Mainnet: 1
-   * Kovan: 42
-   */
-  networkId: number;
-  /**
-   * Address of order maker
-   */
-  maker: string;
-  /**
-   * Address of order taker
-   */
-  taker: string;
-  /**
-   * Address of order feeRecipient
-   */
-  feeRecipient: string;
-  /**
-   * Address of maker token
-   */
-  makerTokenAddress: string;
-  /**
-   * Symbol of maker token
-   */
-  makerTokenSymbol: string;
-  /**
-   * Name of maker token
-   */
-  makerTokenName: string;
-  /**
-   * Decimals of maker token
-   */
-  makerTokenDecimals: number;
-  /**
-   * Unit price of maker token in USD
-   */
-  makerTokenUsdPrice: string;
-  /**
-   * Address of taker token
-   */
-  takerTokenAddress: string;
-  /**
-   * Symbol of taker token
-   */
-  takerTokenSymbol: string;
-  /**
-   * Name of taker token
-   */
-  takerTokenName: string;
-  takerTokenDecimals: number;
-  /**
-   * Unit price of taker token in USD
-   */
-  takerTokenUsdPrice: string;
-  /**
-   * Base amount of maker token filled in trade
-   */
-  filledMakerTokenAmount: string;
-  /**
-   * Unit amount of maker token filled in trade (adjusted for token decimals)
-   */
-  filledMakerTokenUnitAmount: string;
-  /**
-   * USD value of maker amount
-   */
-  filledMakerTokenAmountUsd: string;
-  /**
-   * Base amount of taker token filled in trade
-   */
-  filledTakerTokenAmount: string;
-  /**
-   * Unit amount of taker token filled in trade (adjusted for token decimals)
-   */
-  filledTakerTokenUnitAmount: string;
-  /**
-   * USD value of taker amount
-   */
-  filledTakerTokenAmountUsd: string;
-  /**
-   * Base amount of ZRX fees collected from maker
-   */
-  paidMakerFeeAmount: string;
-  /**
-   * Unit amount of ZRX fees collected from maker
-   */
-  paidMakerFeeUnitAmount: string;
-  /**
-   * USD value of maker fee
-   */
-  paidMakerFeeUsd: string;
-  /**
-   * Base amount of ZRX fees collected from taker
-   */
-  paidTakerFeeAmount: string;
-  /**
-   * Unit amount of ZRX fees collected from taker
-   */
-  paidTakerFeeUnitAmount: string;
-  /**
-   * USD value of taker fee
-   */
-  paidTakerFeeUsd: string;
-  /**
-   * Name of originating relayer (if known)
-   */
-  relayer: string;
+  quoteAssetAddress: string;
+  feeAmount: string;
+  feeAssetAddress: string;
+  logs: FillReceiptLog[];
   /**
    * Unique Identifier
    */
@@ -2296,6 +2122,285 @@ export interface TradeHistoryLog {
    * Enables basic storage and retrieval of dates and times.
    */
   dateUpdated: Date;
+  
+}
+export interface FillReceiptLog {
+  orderId: number;
+  receiptId: number;
+  takerAmount: string;
+  makerAddress: string;
+  isFeeOrder: boolean;
+  order: Order;
+  receipt: FillReceipt;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+/**
+ * An order that has been recorded on the ERC dEX Order Book
+ */
+export interface Order {
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateClosed?: string;
+  /**
+   * 0x Exchange Contract Address
+   */
+  exchangeAddress: string;
+  /**
+   * Unix timestamp of order expiration (in seconds)
+   */
+  expirationTimeSeconds: string;
+  /**
+   * Address of the fee recipient
+   */
+  feeRecipientAddress: string;
+  /**
+   * Address of the order maker
+   */
+  makerAddress: string;
+  /**
+   * Fee due from maker on order fill
+   */
+  makerFee: string;
+  /**
+   * Token address of the maker token
+   */
+  makerAssetAddress: string;
+  /**
+   * Encoded maker asset data
+   */
+  makerAssetData: string;
+  /**
+   * Encoded taker asset data
+   */
+  takerAssetData: string;
+  /**
+   * Total amount of maker token in order
+   */
+  makerAssetAmount: string;
+  /**
+   * Secure salt
+   */
+  salt: string;
+  /**
+   * Serialized version of the EC signature for signed orders
+   */
+  signature: string;
+  /**
+   * Taker address; generally a null taker
+   */
+  takerAddress: string;
+  /**
+   * Fee due from taker on order fill
+   */
+  takerFee: string;
+  /**
+   * Token address of the taker token
+   */
+  takerAssetAddress: string;
+  /**
+   * Total amount of taker token in order
+   */
+  takerAssetAmount: string;
+  /**
+   * Remaining amount that can be filled in taker tokens
+   */
+  remainingFillableAmount: string;
+  /**
+   * The hash of the signed order
+   */
+  orderHash: string;
+  /**
+   * Account ID of originator
+   */
+  accountId?: number;
+  /**
+   * State of the order: Open (0), Canceled (1),
+   * Filled (2), Expired(3), Removed(4)
+   */
+  state: number;
+  price: string;
+  senderAddress: string;
+  system: boolean;
+  account?: Account;
+  fillReceiptLogs: FillReceiptLog[];
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface Account {
+  name: string;
+  city: string;
+  state: string;
+  country: string;
+  address: string;
+  accountType?: ("developer" | "market-maker" | "other" | "relayer" | "trader");
+  phoneNumber?: string;
+  referrerAccountId?: number;
+  referralWalletId?: number;
+  isConfirmed: boolean;
+  referrerAccount: Account;
+  referralWallet?: AuthorizedWallet;
+  users: User[];
+  rebateContracts: RebateContract[];
+  apiKeys: ApiKey[];
+  authorizedWallets: AuthorizedWallet[];
+  orders: Order[];
+  transactionClaims: TransactionClaim[];
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface AuthorizedWallet {
+  /**
+   * Ethereum Account Address
+   */
+  address: string;
+  accountId: number;
+  userId: number;
+  account: Account;
+  user: User;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface User {
+  email: string;
+  firstName: string;
+  lastName: string;
+  accountId: number;
+  account: Account;
+  authorizedWallets: AuthorizedWallet[];
+  roles: ("ercdex-admin")[];
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface RebateContract {
+  txHash: string;
+  contractAddress: string;
+  principal: string;
+  partner: string;
+  referrer?: string;
+  accountId: number;
+  account: Account;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface ApiKey {
+  name: string;
+  keyId: string;
+  /**
+   * ignore
+   */
+  secret: string;
+  createdById: number;
+  accountId: number;
+  account: Account;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface TransactionClaim {
+  txHash: string;
+  accountId: number;
+  account: Account;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+/**
+* This file was automatically generated by json-schema-to-typescript.
+* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
+* and run json-schema-to-typescript to regenerate this file.
+*/
+
+export interface IPairReceiptChangeParams {
+  baseSymbol: string;
+  quoteSymbol: string;
   
 }
 
@@ -2366,7 +2471,7 @@ export interface TradeHistoryLog {
      * Order changes relating to a token pair
      */
     export class PairOrderChange extends SocketEvent<IPairOrderChangeEventParams, IOrderChangeEventData> implements IPairOrderChange {
-      protected path = 'pair-order-change/:makerTokenAddress/:takerTokenAddress';
+      protected path = 'pair-order-change/:baseSymbol/:quoteSymbol';
     }
     export interface IAccountOrderChange extends ISocketEvent<IAccountOrderChangeEventParams, IOrderChangeEventData> {};
 
@@ -2398,133 +2503,35 @@ export interface TradeHistoryLog {
      * Aggregated Order Feed
      */
     export class AggregatedOrderFeed extends SocketEvent<IAggregatedOrderFeedParams, IAggregatedOrderFeedData> implements IAggregatedOrderFeed {
-      protected path = 'aggregated-order-feed/:baseTokenAddress/:quoteTokenAddress';
+      protected path = 'aggregated-order-feed/:baseSymbol/:quoteSymbol';
     }
-    export interface IAccountTradeHistoryLog extends ISocketEvent<IAccountTradeHistoryParams, IAccountTradeHistoryData> {};
+    export interface IMakerFillReceiptChange extends ISocketEvent<IAccountReceiptChangeParams, IFillReceiptChangeData> {};
 
     /**
-     * Trade history logs for account
+     * State changes to FillReceipts associated with orders created by maker
      */
-    export class AccountTradeHistoryLog extends SocketEvent<IAccountTradeHistoryParams, IAccountTradeHistoryData> implements IAccountTradeHistoryLog {
-      protected path = 'account-trade-history/:networkId/:account';
+    export class MakerFillReceiptChange extends SocketEvent<IAccountReceiptChangeParams, IFillReceiptChangeData> implements IMakerFillReceiptChange {
+      protected path = 'maker-fill-receipt-change/:account';
     }
-    export interface IPairTradeHistoryLog extends ISocketEvent<IPairTradeHistoryParams, IPairTradeHistoryData> {};
+    export interface ITakerFillReceiptChange extends ISocketEvent<IAccountReceiptChangeParams, IFillReceiptChangeData> {};
 
     /**
-     * Trade history logs for a token pair
+     * State changes to FillReceipts filled by taker
      */
-    export class PairTradeHistoryLog extends SocketEvent<IPairTradeHistoryParams, IPairTradeHistoryData> implements IPairTradeHistoryLog {
-      protected path = 'pair-trade-history/:networkId/:baseSymbol/:quoteSymbol';
+    export class TakerFillReceiptChange extends SocketEvent<IAccountReceiptChangeParams, IFillReceiptChangeData> implements ITakerFillReceiptChange {
+      protected path = 'taker-fill-receipt-change/:account';
+    }
+    export interface IPairFillReceiptChange extends ISocketEvent<IPairReceiptChangeParams, IFillReceiptChangeData> {};
+
+    /**
+     * State changes to FillReceipts belong to a certain asset pair
+     */
+    export class PairFillReceiptChange extends SocketEvent<IPairReceiptChangeParams, IFillReceiptChangeData> implements IPairFillReceiptChange {
+      protected path = 'pair-fill-receipt-change/:baseSymbol/:quoteSymbol';
     }
   }
 
   export namespace Utils {
-    export interface ISignOrderParams {
-      maker: string;
-      taker: string;
-      makerFee: BigNumber;
-      takerFee: BigNumber;
-      makerTokenAmount: BigNumber;
-      makerTokenAddress: string;
-      takerTokenAmount: BigNumber;
-      takerTokenAddress: string;
-      exchangeContractAddress: string;
-      feeRecipient: string;
-      expirationUnixTimestampSec: number;
-      salt: BigNumber;
-    }
-
-    export interface IZeroExOrder {
-      maker: string;
-      taker: string;
-      makerFee: BigNumber;
-      takerFee: BigNumber;
-      makerTokenAmount: BigNumber;
-      takerTokenAmount: BigNumber;
-      makerTokenAddress: string;
-      takerTokenAddress: string;
-      salt: BigNumber;
-      exchangeContractAddress: string;
-      feeRecipient: string;
-      expirationUnixTimestampSec: BigNumber;
-    }
-
-    export interface IZeroExSignedOrder extends IZeroExOrder {
-      ecSignature: Api.IEcSignature;
-    }
-
-    export const signOrder = async (zeroEx: ZeroEx, params: ISignOrderParams, shouldAddPersonalMessagePrefix = false): Promise<Aqueduct.Api.IStandardOrderCreationRequest> => {
-      const order: IZeroExOrder = {
-        maker: params.maker,
-        taker: params.taker,
-        makerFee: params.makerFee,
-        takerFee: params.takerFee,
-        makerTokenAmount: params.makerTokenAmount,
-        takerTokenAmount: params.takerTokenAmount,
-        makerTokenAddress: params.makerTokenAddress,
-        takerTokenAddress: params.takerTokenAddress as string,
-        salt: params.salt,
-        exchangeContractAddress: params.exchangeContractAddress,
-        feeRecipient: params.feeRecipient,
-        expirationUnixTimestampSec: new BigNumber(params.expirationUnixTimestampSec)
-      };
-
-      const orderHash = ZeroEx.getOrderHashHex(order);
-      const ecSignature = await zeroEx.signOrderHashAsync(orderHash, params.maker, shouldAddPersonalMessagePrefix);
-
-      return {
-        maker: params.maker,
-        taker: order.taker,
-        makerFee: params.makerFee.toString(),
-        takerFee: params.takerFee.toString(),
-        makerTokenAmount: params.makerTokenAmount.toString(),
-        takerTokenAmount: params.takerTokenAmount.toString(),
-        makerTokenAddress: params.makerTokenAddress,
-        takerTokenAddress: params.takerTokenAddress,
-        salt: order.salt.toString(),
-        exchangeContractAddress: params.exchangeContractAddress,
-        feeRecipient: params.feeRecipient,
-        expirationUnixTimestampSec: order.expirationUnixTimestampSec.toString(),
-        ecSignature
-      };
-    };
-
-    export const convertStandardOrderToSignedOrder = (order: Aqueduct.Api.IStandardOrder): IZeroExSignedOrder => {
-      return {
-        ecSignature: order.ecSignature,
-        exchangeContractAddress: order.exchangeContractAddress,
-        expirationUnixTimestampSec: new BigNumber(order.expirationUnixTimestampSec),
-        feeRecipient: order.feeRecipient,
-        maker: order.maker,
-        makerFee: new BigNumber(order.makerFee),
-        makerTokenAddress: order.makerTokenAddress,
-        makerTokenAmount: new BigNumber(order.makerTokenAmount),
-        salt: new BigNumber(order.salt),
-        taker: order.taker,
-        takerFee: new BigNumber(order.takerFee),
-        takerTokenAddress: order.takerTokenAddress,
-        takerTokenAmount: new BigNumber(order.takerTokenAmount)
-      };
-    };
-
-    export const convertOrderToSignedOrder = (order: Aqueduct.Api.Order): IZeroExSignedOrder => {
-      return {
-        ecSignature: JSON.parse(order.serializedEcSignature),
-        exchangeContractAddress: order.exchangeContractAddress,
-        expirationUnixTimestampSec: new BigNumber(order.expirationUnixTimestampSec),
-        feeRecipient: order.feeRecipient,
-        maker: order.maker,
-        makerFee: new BigNumber(order.makerFee),
-        makerTokenAddress: order.makerTokenAddress,
-        makerTokenAmount: new BigNumber(order.makerTokenAmount),
-        salt: new BigNumber(order.salt),
-        taker: order.taker,
-        takerFee: new BigNumber(order.takerFee),
-        takerTokenAddress: order.takerTokenAddress,
-        takerTokenAmount: new BigNumber(order.takerTokenAmount)
-      };
-    };
-
     export const Tokens: TokenCache = tokenCache;
   }
 }

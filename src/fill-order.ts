@@ -1,62 +1,44 @@
-import { BigNumber } from 'bignumber.js';
-import * as Web3 from 'web3';
+import { Provider } from '0x.js';
 import { Aqueduct } from './generated/aqueduct';
+import { SigningUtils } from './signing-utils';
 import { Web3EnabledService } from './web3-enabled-service';
 
 export interface IFillOrderParams {
-  web3: Web3;
-  orderHash: string;
+  provider: Provider;
 
   /**
-   * The fill amount denominated in the base token
+   * Collection of orders and fill amounts
    */
-  takerAmountInWei: BigNumber;
-  account: string;
+  fills: Aqueduct.Api.IOrderFill[];
+
+  /**
+   * Account filling order
+   */
+  taker: string;
 }
 
-export class FillOrder extends Web3EnabledService<string> {
+export class FillOrders extends Web3EnabledService<Aqueduct.Api.FillReceipt> {
   constructor(private readonly params: IFillOrderParams) {
-    super(params.web3);
+    super(params.provider);
   }
 
   protected async run() {
-    let order: Aqueduct.Api.IStandardOrder | undefined = undefined;
-    try {
-      order = await new Aqueduct.Api.StandardService().getOrderByHash({
-        orderHash: this.params.orderHash,
-        networkId: this.networkId
-      });
-    } catch (err) {
-      console.error(err);
-    }
-
-    if (!order) {
-      throw new Error(`couldn't find an order with hash ${this.params.orderHash}`);
-    }
-
-    const signedOrder = Aqueduct.Utils.convertStandardOrderToSignedOrder(order);
-
-    try {
-      const txHash = await this.zeroEx.exchange.fillOrderAsync(signedOrder, this.params.takerAmountInWei, true, this.params.account);
-
-      const apiKeyId = Aqueduct.getApiKeyId();
-      if (apiKeyId) {
-        try {
-          await new Aqueduct.Api.TransactionClaimsService().claim({
-            request: {
-              networkId: this.networkId,
-              txHash
-            }
-          });
-        } catch (err) {
-          console.error(`failed to claim txHash ${txHash}:`, err);
-        }
+    const quote = await new Aqueduct.Api.TradeService().requestFill({
+      request: {
+        fills: this.params.fills,
+        taker: this.params.taker
       }
+    });
 
-      return txHash;
-    } catch (err) {
-      console.error(err);
-      throw new Error(`error filling the order: ${err ? err.message : 'no error object'}`);
-    }
+    const signature = await SigningUtils.signExecuteTransactionHexAsync(await this.zeroEx, quote.hex, this.params.taker);
+
+    const receipt = await new Aqueduct.Api.TradeService().fill({
+      request: {
+        quoteId: quote.id,
+        signature
+      }
+    });
+
+    return receipt;
   }
 }

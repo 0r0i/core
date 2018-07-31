@@ -1,12 +1,12 @@
-import { ZeroEx } from '0x.js/lib/src/0x';
+import { Order, Provider, ZeroEx } from '0x.js';
 import { BigNumber } from 'bignumber.js';
-import * as Web3 from 'web3';
 import { Aqueduct } from './generated/aqueduct';
+import { SigningUtils } from './signing-utils';
 import { tokenCache } from './token-cache';
 import { Web3EnabledService } from './web3-enabled-service';
 
 export interface ILimitOrderParams {
-  web3: Web3;
+  provider: Provider;
 
   /**
    * Limit orders can be a buy or a sell order
@@ -52,12 +52,10 @@ export interface ILimitOrderParams {
 }
 
 interface IValidateParams {
-  networkId: number;
-  makerTokenAmount: BigNumber;
-  takerTokenAmount: BigNumber;
+  makerAssetAmount: BigNumber;
+  takerAssetAmount: BigNumber;
   makerToken: Aqueduct.Api.IToken;
   takerToken: Aqueduct.Api.IToken;
-  fees: Aqueduct.Api.IFees;
   tokenPair: Aqueduct.Api.ITokenPair;
 }
 
@@ -69,108 +67,116 @@ export const denormalizedTokenPrice = (value: BigNumber, decimals: number) => {
 
 export class LimitOrder extends Web3EnabledService<Aqueduct.Api.Order> {
   constructor(private readonly params: ILimitOrderParams) {
-    super(params.web3);
-   }
+    super(params.provider);
+  }
 
   protected async run() {
-    const networkId = this.networkId;
-    const tokenPair = await tokenCache.getTokenPair(this.params.baseTokenSymbol, this.params.quoteTokenSymbol, networkId);
-    const baseToken = tokenPair.tokenA;
-    const quoteToken = tokenPair.tokenB;
+    const tokenPair = await tokenCache.getTokenPair(this.params.baseTokenSymbol, this.params.quoteTokenSymbol);
+    const baseToken = tokenPair.assetDataA;
+    const quoteToken = tokenPair.assetDataB;
 
-    if (new BigNumber(tokenPair.minimumQuantity).greaterThan(this.params.quantityInWei)) {
-      throw new Error(`order quantity must be greater than minimum allowed amount: ${this.params.quantityInWei}/${tokenPair.minimumQuantity}`);
+    if (new BigNumber(tokenPair.minAmount).greaterThan(this.params.quantityInWei)) {
+      throw new Error(`order quantity must be greater than minimum allowed amount: ${this.params.quantityInWei}/${tokenPair.minAmount}`);
     }
 
     if (!new BigNumber(this.params.quantityInWei).isInt()) {
       throw new Error(`order quantity must be an integer, got ${this.params.quantityInWei.toString()}`);
     }
 
-    let makerTokenAmount: BigNumber;
+    let makerAssetAmount: BigNumber;
     let makerToken: Aqueduct.Api.IToken;
-    let takerTokenAmount: BigNumber;
+    let takerAssetAmount: BigNumber;
     let takerToken: Aqueduct.Api.IToken;
 
     if (this.params.type === 'buy') {
       makerToken = quoteToken;
       takerToken = baseToken;
-      takerTokenAmount = new BigNumber(this.params.quantityInWei);
-      makerTokenAmount = denormalizedTokenPrice(takerTokenAmount.times(new BigNumber(this.params.price)), tokenPair.tokenA.decimals)
+      takerAssetAmount = new BigNumber(this.params.quantityInWei);
+      makerAssetAmount = denormalizedTokenPrice(takerAssetAmount.times(new BigNumber(this.params.price)), baseToken.decimals)
         .round();
     } else {
       makerToken = baseToken;
       takerToken = quoteToken;
-      makerTokenAmount = new BigNumber(this.params.quantityInWei);
-      takerTokenAmount = denormalizedTokenPrice(makerTokenAmount.times(new BigNumber(this.params.price)), tokenPair.tokenA.decimals)
+      makerAssetAmount = new BigNumber(this.params.quantityInWei);
+      takerAssetAmount = denormalizedTokenPrice(makerAssetAmount.times(new BigNumber(this.params.price)), baseToken.decimals)
         .round();
     }
 
-    let fees: Aqueduct.Api.IFees;
+    const zeroEx = this.zeroEx;
+    const exchangeAddress = await zeroEx.exchange.getContractAddress();
+
+    let orderConfig: Aqueduct.Api.IOrderConfig;
     try {
-      fees = await new Aqueduct.Api.FeesService().get({
-        makerTokenAmount: makerTokenAmount.toString(),
-        takerTokenAddress: takerToken.address,
-        makerTokenAddress: makerToken.address,
-        maker: this.params.account,
-        taker: nullAddress,
-        networkId,
-        takerTokenAmount: takerTokenAmount.toString()
+      orderConfig = await new Aqueduct.Api.OrdersService().getOrderConfig({
+        exchangeAddress,
+        makerAddress: this.params.account,
+        makerAssetAmount: makerAssetAmount.toString(),
+        makerAssetData: ZeroEx.encodeERC20AssetData(makerToken.address),
+        takerAddress: nullAddress,
+        takerAssetAmount: takerAssetAmount.toString(),
+        takerAssetData: ZeroEx.encodeERC20AssetData(takerToken.address)
       });
     } catch (err) {
-      console.error('failed to get fees...');
+      console.error('failed to get order config...');
       console.log(err);
       throw err;
     }
 
     await this.validateRequest({
-      fees,
-      networkId,
-      takerTokenAmount,
-      makerTokenAmount,
+      takerAssetAmount,
+      makerAssetAmount,
       makerToken,
       takerToken,
       tokenPair
     });
 
-    const zeroEx = this.zeroEx;
-    const exchangeContractAddress = await zeroEx.exchange.getContractAddress();
-    const salt = ZeroEx.generatePseudoRandomSalt();
-
-    const expirationUnixTimestampSec = !this.params.expirationDate
+    const expirationTimeSeconds = new BigNumber(!this.params.expirationDate
       ? 4102444800
-      : Math.floor(this.params.expirationDate.getTime() / 1000);
+      : Math.floor(this.params.expirationDate.getTime() / 1000));
 
-    const signOrderParams: Aqueduct.Utils.ISignOrderParams = {
-      exchangeContractAddress,
-      expirationUnixTimestampSec,
-      maker: this.params.account,
-      feeRecipient: fees.feeRecipient,
-      makerFee: new BigNumber(fees.makerFee),
-      makerTokenAddress: makerToken.address,
-      makerTokenAmount,
-      salt: new BigNumber(salt),
-      taker: nullAddress,
-      takerFee: new BigNumber(fees.takerFee),
-      takerTokenAddress: takerToken.address,
-      takerTokenAmount
+    const signOrderParams = {
+      zeroEx,
+      feeRecipientAddress: orderConfig.feeRecipientAddress,
+      makerFee: new BigNumber(orderConfig.makerFee),
+      takerFee: new BigNumber(orderConfig.takerFee),
+      senderAddress: orderConfig.senderAddress,
+      makerAddress: this.params.account,
+      makerAssetAddress: makerToken.address,
+      takerAssetAddress: takerToken.address,
+      exchangeAddress,
+      makerAssetAmount,
+      takerAssetAmount,
+      expirationTimeSeconds
     };
 
-    let signedOrder: Aqueduct.Api.IStandardOrderCreationRequest;
+    let signatureResults: { order: Order; signature: string };
     try {
       console.log('signing order...');
-      signedOrder = await Aqueduct.Utils.signOrder(zeroEx, signOrderParams, !!this.params.shouldAddPersonalMessagePrefix);
+      signatureResults = await SigningUtils.signOrder(signOrderParams);
     } catch (err) {
       console.error('failed to sign order');
       throw err;
     }
 
     try {
-      /**
-       * Create the order in ERC dEX
-       */
-      const createdOrder = await new Aqueduct.Api.StandardService().create({
-        networkId,
-        request: signedOrder
+      const { order, signature } = signatureResults;
+      const createdOrder = await new Aqueduct.Api.OrdersService().createOrder({
+        request: {
+          makerAddress: signOrderParams.makerAddress,
+          makerAssetData: order.makerAssetData,
+          takerAssetData: order.takerAssetData,
+          takerAddress: order.takerAddress,
+          feeRecipientAddress: order.feeRecipientAddress,
+          senderAddress: order.senderAddress,
+          exchangeAddress: order.exchangeAddress,
+          expirationTimeSeconds: order.expirationTimeSeconds.toString(),
+          makerFee: order.makerFee.toString(),
+          takerFee: order.takerFee.toString(),
+          salt: order.salt.toString(),
+          makerAssetAmount: order.makerAssetAmount.toString(),
+          takerAssetAmount: order.takerAssetAmount.toString(),
+          signature
+        }
       });
       return createdOrder;
     } catch (err) {
@@ -181,33 +187,23 @@ export class LimitOrder extends Web3EnabledService<Aqueduct.Api.Order> {
   }
 
   private async validateRequest(params: IValidateParams) {
-    const { networkId, fees, makerToken, makerTokenAmount, takerTokenAmount } = params;
+    const { makerToken, makerAssetAmount } = params;
 
     const zeroEx = this.zeroEx;
-    const zrxToken = await tokenCache.getTokenBySymbol('ZRX', networkId);
-    const zrxBalance = await zeroEx.token.getBalanceAsync(zrxToken.address, this.params.account);
 
-    const buyingZrx = this.params.type === 'buy' && this.params.baseTokenSymbol.toLowerCase() === 'zrx';
-    if (!buyingZrx && zrxBalance.lessThan(fees.makerFee)) {
-      throw new Error(`insufficient ZRX balance to pay fees ${zrxBalance.toString()}/${fees.makerFee.toString()}`);
-    } else if (buyingZrx && zrxBalance.plus(takerTokenAmount).lessThan(fees.makerFee)) {
-      throw new Error('insufficient ZRX balance and not buying enough ZRX to cover the cost');
-    }
-
-    const zrxAllowance = await zeroEx.token.getProxyAllowanceAsync(zrxToken.address, this.params.account);
-    if (zrxAllowance.lessThan(fees.makerFee)) {
-      throw new Error('insufficient ZRX allowance to pay fees');
-    }
-
-    // maker token validation
-    const makerBalance = await zeroEx.token.getBalanceAsync(makerToken.address, this.params.account);
-    if (makerBalance.lessThan(makerTokenAmount)) {
-      throw new Error('insufficient token balance');
-    }
-
-    const makerAllowance = await zeroEx.token.getProxyAllowanceAsync(makerToken.address, this.params.account);
-    if (makerAllowance.lessThan(makerTokenAmount)) {
-      throw new Error('insufficient allowance');
-    }
+    await Promise.all([
+      (async () => {
+        const makerBalance = await zeroEx.erc20Token.getBalanceAsync(makerToken.address, this.params.account);
+        if (makerBalance.lessThan(makerAssetAmount)) {
+          throw new Error('insufficient token balance');
+        }
+      })(),
+      (async () => {
+        const makerAllowance = await zeroEx.erc20Token.getProxyAllowanceAsync(makerToken.address, this.params.account);
+        if (makerAllowance.lessThan(makerAssetAmount)) {
+          throw new Error('insufficient allowance');
+        }
+      })()
+    ]);
   }
 }
