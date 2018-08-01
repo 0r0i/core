@@ -398,7 +398,11 @@ Current status of app
       /**
        * Remaining amount that can be filled in taker tokens
        */
-      remainingFillableAmount: string;
+      remainingFillableTakerAmount: string;
+      /**
+       * Remaining amount that can be filled in maker tokens
+       */
+      remainingFillableMakerAmount: string;
       /**
        * The hash of the signed order
        */
@@ -739,6 +743,10 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        * Computed average price
        */
       price: string;
+      /**
+       * Total taker amount
+       */
+      takerAmount: string;
     }
 
     export interface IOrderFill {
@@ -761,6 +769,44 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        * Collection of trade requests
        */
       fills: IOrderFill[];
+    }
+
+    export interface IGetMarketOrderQuoteRequest {
+      /**
+       * Wallet address of intended taker
+       */
+      takerAddress: string;
+      /**
+       * Token pair in BASE/QUOTE format
+       */
+      pair: string;
+      /**
+       * Trade side: &#x27;buy&#x27; or &#x27;sell&#x27;
+       */
+      side: string;
+      /**
+       * Quantity in wei of base token to buy/sell
+       */
+      quantity: string;
+    }
+
+    export interface IGetMarketOrderQuoteByPercentageRequest {
+      /**
+       * Wallet address of intended taker
+       */
+      takerAddress: string;
+      /**
+       * Token pair in BASE/QUOTE format
+       */
+      pair: string;
+      /**
+       * Trade side: &#x27;buy&#x27; or &#x27;sell&#x27;
+       */
+      side: string;
+      /**
+       * Percentage (integer, 1-100)
+       */
+      percentage: number;
     }
 
     export interface IGetReceiptsResponse {
@@ -1059,6 +1105,14 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
 
     export interface ITradeRequestFillParams {
       request: IRequestFillRequest;
+    }
+
+    export interface ITradeGetMarketQuoteParams {
+      request: IGetMarketOrderQuoteRequest;
+    }
+
+    export interface ITradeGetMarketQuoteByPercentParams {
+      request: IGetMarketOrderQuoteByPercentageRequest;
     }
 
     export interface ITradeGetReceiptParams {
@@ -1520,6 +1574,16 @@ example: ZRX/WETH
       requestFill(params: ITradeRequestFillParams, headers?: IAdditionalHeaders): Promise<IFillQuote>;
 
       /**
+       * Get a quote for a requested quantity
+       */
+      getMarketQuote(params: ITradeGetMarketQuoteParams, headers?: IAdditionalHeaders): Promise<IFillQuote>;
+
+      /**
+       * Get a quote by percentage
+       */
+      getMarketQuoteByPercent(params: ITradeGetMarketQuoteByPercentParams, headers?: IAdditionalHeaders): Promise<IFillQuote>;
+
+      /**
        * Get a receipt of an attempted fill
        */
       getReceipt(params: ITradeGetReceiptParams, headers?: IAdditionalHeaders): Promise<FillReceipt>;
@@ -1550,6 +1614,34 @@ example: ZRX/WETH
         const requestParams: IRequestParams = {
           method: 'POST',
           url: `${baseApiUrl}/api/v1/trade/request_fill`
+        };
+
+        requestParams.body = params.request;
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<IFillQuote>(requestParams, headers);
+      }
+
+      /**
+       * Get a quote for a requested quantity
+       */
+      public async getMarketQuote(params: ITradeGetMarketQuoteParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'POST',
+          url: `${baseApiUrl}/api/v1/trade/market_quote`
+        };
+
+        requestParams.body = params.request;
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<IFillQuote>(requestParams, headers);
+      }
+
+      /**
+       * Get a quote by percentage
+       */
+      public async getMarketQuoteByPercent(params: ITradeGetMarketQuoteByPercentParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'POST',
+          url: `${baseApiUrl}/api/v1/trade/market_quote_by_percent`
         };
 
         requestParams.body = params.request;
@@ -1724,7 +1816,11 @@ export interface Order {
   /**
    * Remaining amount that can be filled in taker tokens
    */
-  remainingFillableAmount: string;
+  remainingFillableTakerAmount: string;
+  /**
+   * Remaining amount that can be filled in maker tokens
+   */
+  remainingFillableMakerAmount: string;
   /**
    * The hash of the signed order
    */
@@ -2217,7 +2313,11 @@ export interface Order {
   /**
    * Remaining amount that can be filled in taker tokens
    */
-  remainingFillableAmount: string;
+  remainingFillableTakerAmount: string;
+  /**
+   * Remaining amount that can be filled in maker tokens
+   */
+  remainingFillableMakerAmount: string;
   /**
    * The hash of the signed order
    */
