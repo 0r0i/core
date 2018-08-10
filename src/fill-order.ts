@@ -1,4 +1,5 @@
 import { Provider } from '0x.js';
+import { SignatureType } from '@0xproject/types';
 import { Aqueduct } from './generated/aqueduct';
 import { SigningUtils } from './signing-utils';
 import { Web3EnabledService } from './web3-enabled-service';
@@ -15,6 +16,8 @@ export interface IFillOrderParams {
    * Account filling order
    */
   taker: string;
+
+  shouldPrefix: boolean;
 }
 
 export class FillOrders extends Web3EnabledService<Aqueduct.Api.FillReceipt> {
@@ -30,7 +33,13 @@ export class FillOrders extends Web3EnabledService<Aqueduct.Api.FillReceipt> {
       }
     });
 
-    const signature = await SigningUtils.signExecuteTransactionHexAsync(await this.zeroEx, quote.hex, this.params.taker);
+    const signature = await SigningUtils.signExecuteTransactionHexAsync(
+      await this.zeroEx,
+      quote.hex,
+      this.params.taker,
+      SignatureType.EthSign,
+      this.params.shouldPrefix
+    );
 
     const receipt = await new Aqueduct.Api.TradeService().fill({
       request: {

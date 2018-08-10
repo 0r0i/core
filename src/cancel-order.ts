@@ -15,6 +15,8 @@ export interface ICancelOrderParams {
    * Order
    */
   order: Aqueduct.Api.Order;
+
+  shouldPrefix: boolean;
 }
 
 /**
@@ -39,7 +41,8 @@ export class CancelOrder extends Web3EnabledService<Aqueduct.Api.ICancelOrderRes
               this.zeroEx,
               '0x' + ethUtil.sha3(`cancel:${this.params.order.orderHash}`).toString('hex'),
               this.params.order.makerAddress,
-              SignatureType.EthSign
+              SignatureType.EthSign,
+              this.params.shouldPrefix
             )
           }
         ]

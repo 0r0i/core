@@ -19,7 +19,8 @@ describe('FillOrders', () => {
       baseTokenSymbol: 'ZRX',
       quoteTokenSymbol: 'WETH',
       quantityInWei: minAmount,
-      type: 'sell'
+      type: 'sell',
+      shouldPrefix: false
     }).execute();
 
     const taker = TRADER_ADDRESS;
@@ -28,7 +29,8 @@ describe('FillOrders', () => {
     const result = await new FillOrders({
       provider: web3Wrapper().getProvider(),
       taker,
-      fills: [{ orderHash: order.orderHash, takerAmount: order.takerAssetAmount }]
+      fills: [{ orderHash: order.orderHash, takerAmount: order.takerAssetAmount }],
+      shouldPrefix: false
     }).execute();
     expect(result.status).to.equal('pending');
 

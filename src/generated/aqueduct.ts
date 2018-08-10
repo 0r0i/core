@@ -481,6 +481,7 @@ Filled (2), Expired(3), Removed(4)
       status: string;
       side: string;
       takerAmount: string;
+      makerAmount: string;
       price: string;
       baseAssetAddress: string;
       baseSymbol: string;
@@ -579,11 +580,6 @@ Filled (2), Expired(3), Removed(4)
     export interface IOrderbookResponse {
       bids: IOrderbookSide;
       asks: IOrderbookSide;
-    }
-
-    export interface IMarketOrderQuote {
-      totalQuantity: string;
-      orders: Order[];
     }
 
     export interface ICancelOrderResult {
@@ -710,6 +706,25 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
       order: Order;
     }
 
+    export interface IFeeData {
+      /**
+       * ID of order used to pay the fee
+       */
+      orderId: number;
+      /**
+       * Symbol of the token used to pay fees
+       */
+      tokenSymbol: string;
+      /**
+       * Base amount of fees paid
+       */
+      amount: string;
+      /**
+       * Base amount of fees paid to cover network fees
+       */
+      networkAmount: string;
+    }
+
     export interface IFillQuote {
       /**
        * Unique quote identifier
@@ -732,9 +747,9 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        */
       taker: string;
       /**
-       * Unique identifier of the order for paying fees, if applicable
+       * Contains information regarding any applicable fees
        */
-      feeOrderId: number;
+      feeData?: IFeeData;
       /**
        * Trade token pair
        */
@@ -747,6 +762,14 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        * Total taker amount
        */
       takerAmount: string;
+      /**
+       * Total maker amount
+       */
+      makerAmount: string;
+      /**
+       * Address of taker token
+       */
+      takerAssetAddress: string;
     }
 
     export interface IOrderFill {
@@ -769,6 +792,57 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        * Collection of trade requests
        */
       fills: IOrderFill[];
+    }
+
+    export interface IMarketOrderQuote {
+      /**
+       * Unique quote identifier
+       */
+      id: number;
+      /**
+       * Collection of fills
+       */
+      fills: IExtendedOrderFill[];
+      /**
+       * Unique salt
+       */
+      salt: string;
+      /**
+       * Pre-calculated hex to sign
+       */
+      hex: string;
+      /**
+       * Order taker
+       */
+      taker: string;
+      /**
+       * Contains information regarding any applicable fees
+       */
+      feeData?: IFeeData;
+      /**
+       * Trade token pair
+       */
+      tokenPair: ITokenPair;
+      /**
+       * Computed average price
+       */
+      price: string;
+      /**
+       * Total taker amount
+       */
+      takerAmount: string;
+      /**
+       * Total maker amount
+       */
+      makerAmount: string;
+      /**
+       * Address of taker token
+       */
+      takerAssetAddress: string;
+      /**
+       * Can only provide a partial quote
+       */
+      isPartial: boolean;
     }
 
     export interface IGetMarketOrderQuoteRequest {
@@ -1009,10 +1083,6 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        */
       traderAddress?: string;
       /**
-       * Taker asset type (only ERC20 supported)
-       */
-      takerAssetType?: string;
-      /**
        * Token address of taker asset
        */
       takerAssetAddress?: string;
@@ -1021,10 +1091,6 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        */
       takerAddress?: string;
       /**
-       * Maker asset type (only ERC20 supported)
-       */
-      makerAssetType?: string;
-      /**
        * Token address of maker asset
        */
       makerAssetAddress?: string;
@@ -1032,6 +1098,15 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        * Address of order maker
        */
       makerAddress?: string;
+      /**
+       * Maker asset type (only ERC20 supported)
+       */
+      makerAssetType?: string;
+      /**
+       * Taker asset type (only ERC20 supported)
+       */
+      takerAssetType?: string;
+      pair?: string;
     }
 
     export interface IOrdersGetOrderByHashParams {
@@ -1056,29 +1131,6 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
       quoteAssetData: string;
       per_page?: number;
       page?: number;
-    }
-
-    export interface IOrdersGetBestParams {
-      /**
-       * Address of maker token
-       */
-      makerTokenAddress: string;
-      /**
-       * Address of taker token
-       */
-      takerTokenAddress: string;
-      /**
-       * Address of base token
-       */
-      baseTokenAddress: string;
-      /**
-       * Quantity of pair requested
-       */
-      quantity: string;
-      /**
-       * Address of order taker
-       */
-      takerAddress: string;
     }
 
     export interface IOrdersCancelParams {
@@ -1368,11 +1420,6 @@ example: ZRX/WETH
       getOrderbook(params: IOrdersGetOrderbookParams, headers?: IAdditionalHeaders): Promise<IOrderbookResponse>;
 
       /**
-       * Get the order(s) representing the best market price
-       */
-      getBest(params: IOrdersGetBestParams, headers?: IAdditionalHeaders): Promise<IMarketOrderQuote>;
-
-      /**
        * Cancel one or more orders
        */
       cancel(params: IOrdersCancelParams, headers?: IAdditionalHeaders): Promise<ICancelOrderResult[]>;
@@ -1414,12 +1461,13 @@ example: ZRX/WETH
           senderAddress: params.senderAddress,
           traderAssetData: params.traderAssetData,
           traderAddress: params.traderAddress,
-          takerAssetType: params.takerAssetType,
           takerAssetAddress: params.takerAssetAddress,
           takerAddress: params.takerAddress,
-          makerAssetType: params.makerAssetType,
           makerAssetAddress: params.makerAssetAddress,
           makerAddress: params.makerAddress,
+          makerAssetType: params.makerAssetType,
+          takerAssetType: params.takerAssetType,
+          pair: params.pair,
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IGetOrdersResponse>(requestParams, headers);
@@ -1470,26 +1518,6 @@ example: ZRX/WETH
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IOrderbookResponse>(requestParams, headers);
-      }
-
-      /**
-       * Get the order(s) representing the best market price
-       */
-      public async getBest(params: IOrdersGetBestParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'GET',
-          url: `${baseApiUrl}/api/v1/best`
-        };
-
-        requestParams.queryParameters = {
-          makerTokenAddress: params.makerTokenAddress,
-          takerTokenAddress: params.takerTokenAddress,
-          baseTokenAddress: params.baseTokenAddress,
-          quantity: params.quantity,
-          takerAddress: params.takerAddress,
-        };
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IMarketOrderQuote>(requestParams, headers);
       }
 
       /**
@@ -1576,12 +1604,12 @@ example: ZRX/WETH
       /**
        * Get a quote for a requested quantity
        */
-      getMarketQuote(params: ITradeGetMarketQuoteParams, headers?: IAdditionalHeaders): Promise<IFillQuote>;
+      getMarketQuote(params: ITradeGetMarketQuoteParams, headers?: IAdditionalHeaders): Promise<IMarketOrderQuote>;
 
       /**
        * Get a quote by percentage
        */
-      getMarketQuoteByPercent(params: ITradeGetMarketQuoteByPercentParams, headers?: IAdditionalHeaders): Promise<IFillQuote>;
+      getMarketQuoteByPercent(params: ITradeGetMarketQuoteByPercentParams, headers?: IAdditionalHeaders): Promise<IMarketOrderQuote>;
 
       /**
        * Get a receipt of an attempted fill
@@ -1632,7 +1660,7 @@ example: ZRX/WETH
 
         requestParams.body = params.request;
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IFillQuote>(requestParams, headers);
+        return this.executeRequest<IMarketOrderQuote>(requestParams, headers);
       }
 
       /**
@@ -1646,7 +1674,7 @@ example: ZRX/WETH
 
         requestParams.body = params.request;
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IFillQuote>(requestParams, headers);
+        return this.executeRequest<IMarketOrderQuote>(requestParams, headers);
       }
 
       /**
@@ -2023,6 +2051,7 @@ export interface FillReceipt {
   status: ("error" | "pending" | "success");
   side: ("buy" | "sell");
   takerAmount: string;
+  makerAmount: string;
   price: string;
   baseAssetAddress: string;
   baseSymbol: string;
@@ -2198,6 +2227,7 @@ export interface FillReceipt {
   status: ("error" | "pending" | "success");
   side: ("buy" | "sell");
   takerAmount: string;
+  makerAmount: string;
   price: string;
   baseAssetAddress: string;
   baseSymbol: string;

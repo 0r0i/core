@@ -17,7 +17,8 @@ describe('LimitOrder', () => {
       baseTokenSymbol: 'FAKE',
       quoteTokenSymbol: 'TOKEN',
       quantityInWei: new BigNumber(1),
-      type: 'buy'
+      type: 'buy',
+      shouldPrefix: false
     }).execute());
     expect(err.message).to.equal('token pair not found or supported: FAKE/TOKEN');
   });
@@ -33,7 +34,8 @@ describe('LimitOrder', () => {
       baseTokenSymbol: 'ZRX',
       quoteTokenSymbol: 'WETH',
       quantityInWei,
-      type: 'buy'
+      type: 'buy',
+      shouldPrefix: false
     }).execute());
     expect(err.message).to.equal(`order quantity must be greater than minimum allowed amount: ${quantityInWei}/${tokenPair.minAmount}`);
   });
@@ -49,7 +51,8 @@ describe('LimitOrder', () => {
       baseTokenSymbol: 'ZRX',
       quoteTokenSymbol: 'WETH',
       quantityInWei,
-      type: 'buy'
+      type: 'buy',
+      shouldPrefix: false
     }).execute());
     expect(err.message).to.equal(`order quantity must be an integer, got ${quantityInWei.toString()}`);
   });
@@ -66,7 +69,8 @@ describe('LimitOrder', () => {
       baseTokenSymbol: 'ZRX',
       quoteTokenSymbol: 'WETH',
       quantityInWei: zrxBalance.plus(1),
-      type: 'sell'
+      type: 'sell',
+      shouldPrefix: false
     }).execute());
     expect(err.message).to.equal(`insufficient token balance`);
   });
@@ -85,7 +89,8 @@ describe('LimitOrder', () => {
       baseTokenSymbol: 'ZRX',
       quoteTokenSymbol: 'WETH',
       quantityInWei: minAmount,
-      type: 'sell'
+      type: 'sell',
+      shouldPrefix: false
     }).execute());
     expect(err.message).to.equal(`insufficient allowance`);
 
@@ -107,7 +112,8 @@ describe('LimitOrder', () => {
       baseTokenSymbol: 'ZRX',
       quoteTokenSymbol: 'WETH',
       quantityInWei: minAmount,
-      type: 'sell'
+      type: 'sell',
+      shouldPrefix: false
     }).execute();
     expect(order.price).to.equal('0.0005');
 
@@ -121,7 +127,8 @@ describe('LimitOrder', () => {
     // cancel the order
     const result = await new CancelOrder({
       order,
-      provider: web3Wrapper().getProvider()
+      provider: web3Wrapper().getProvider(),
+      shouldPrefix: false
     }).execute();
     expect(result.orderHash).to.equal(order.orderHash);
     expect(result.success).to.equal(true);

@@ -28,11 +28,12 @@ export const SigningUtils = {
     hexMessage: string,
     address: string,
     signatureType: SignatureType,
+    shouldPrefix: boolean
   ) {
     if (signatureType === SignatureType.EthSign) {
       const rpcSig = await zeroEx.ecSignOrderHashAsync(hexMessage, address, {
         prefixType: MessagePrefixType.EthSign,
-        shouldAddPrefixBeforeCallingEthSign: false
+        shouldAddPrefixBeforeCallingEthSign: shouldPrefix
       });
       return this.rsvToSignature(rpcSig);
     } else {
@@ -57,6 +58,7 @@ export const SigningUtils = {
     executeTransactionHex: string,
     signerAddress: string,
     signatureType: SignatureType = SignatureType.EthSign,
+    shouldPrefix: boolean
   ): Promise<string> {
     const eip721MessageBuffer = ethUtil.toBuffer(executeTransactionHex);
     const signature = await SigningUtils.signMessageAsync(
@@ -64,6 +66,7 @@ export const SigningUtils = {
       '0x' + eip721MessageBuffer.toString('hex'),
       signerAddress,
       signatureType,
+      shouldPrefix
     );
     return signature;
   },
@@ -79,12 +82,13 @@ export const SigningUtils = {
     takerAssetAmount: BigNumber,
     makerFee: BigNumber,
     takerFee: BigNumber,
-    expirationTimeSeconds: BigNumber
+    expirationTimeSeconds: BigNumber,
+    shouldPrefix: boolean
   }) {
     const {
       zeroEx, makerAddress, makerAssetAddress, takerAssetAddress, senderAddress,
       exchangeAddress, feeRecipientAddress, makerAssetAmount, takerAssetAmount,
-      makerFee, takerFee, expirationTimeSeconds
+      makerFee, takerFee, expirationTimeSeconds, shouldPrefix
     } = params;
 
     const order: Order = {
@@ -106,7 +110,7 @@ export const SigningUtils = {
     const orderHash = ZeroEx.getOrderHashHex(order);
     const ecSignature = await zeroEx.ecSignOrderHashAsync(orderHash, makerAddress, {
       prefixType: MessagePrefixType.EthSign,
-      shouldAddPrefixBeforeCallingEthSign: false
+      shouldAddPrefixBeforeCallingEthSign: shouldPrefix
     });
 
     return {

@@ -48,7 +48,7 @@ export interface ILimitOrderParams {
    *
    * Some signers add the personal prefix themselves, some don't
    */
-  shouldAddPersonalMessagePrefix?: boolean;
+  shouldPrefix: boolean;
 }
 
 interface IValidateParams {
@@ -146,44 +146,38 @@ export class LimitOrder extends Web3EnabledService<Aqueduct.Api.Order> {
       exchangeAddress,
       makerAssetAmount,
       takerAssetAmount,
-      expirationTimeSeconds
+      expirationTimeSeconds,
+      shouldPrefix: this.params.shouldPrefix
     };
 
     let signatureResults: { order: Order; signature: string };
     try {
-      console.log('signing order...');
       signatureResults = await SigningUtils.signOrder(signOrderParams);
     } catch (err) {
       console.error('failed to sign order');
-      throw err;
+      throw new Error('INVALID_SIGNATURE');
     }
 
-    try {
-      const { order, signature } = signatureResults;
-      const createdOrder = await new Aqueduct.Api.OrdersService().createOrder({
-        request: {
-          makerAddress: signOrderParams.makerAddress,
-          makerAssetData: order.makerAssetData,
-          takerAssetData: order.takerAssetData,
-          takerAddress: order.takerAddress,
-          feeRecipientAddress: order.feeRecipientAddress,
-          senderAddress: order.senderAddress,
-          exchangeAddress: order.exchangeAddress,
-          expirationTimeSeconds: order.expirationTimeSeconds.toString(),
-          makerFee: order.makerFee.toString(),
-          takerFee: order.takerFee.toString(),
-          salt: order.salt.toString(),
-          makerAssetAmount: order.makerAssetAmount.toString(),
-          takerAssetAmount: order.takerAssetAmount.toString(),
-          signature
-        }
-      });
-      return createdOrder;
-    } catch (err) {
-      console.error('problem posting order to API');
-      console.error(err.message);
-      throw err;
-    }
+    const { order, signature } = signatureResults;
+    const createdOrder = await new Aqueduct.Api.OrdersService().createOrder({
+      request: {
+        makerAddress: signOrderParams.makerAddress,
+        makerAssetData: order.makerAssetData,
+        takerAssetData: order.takerAssetData,
+        takerAddress: order.takerAddress,
+        feeRecipientAddress: order.feeRecipientAddress,
+        senderAddress: order.senderAddress,
+        exchangeAddress: order.exchangeAddress,
+        expirationTimeSeconds: order.expirationTimeSeconds.toString(),
+        makerFee: order.makerFee.toString(),
+        takerFee: order.takerFee.toString(),
+        salt: order.salt.toString(),
+        makerAssetAmount: order.makerAssetAmount.toString(),
+        takerAssetAmount: order.takerAssetAmount.toString(),
+        signature
+      }
+    });
+    return createdOrder;
   }
 
   private async validateRequest(params: IValidateParams) {
