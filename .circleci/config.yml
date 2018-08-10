@@ -27,8 +27,3 @@ jobs:
               gsutil rsync -d -r docs/dist gs://aqueduct.ercdex.com
               gsutil iam ch allUsers:objectViewer gs://aqueduct.ercdex.com
             fi
-
-            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-              gsutil rsync -d -r docs/dist gs://aqueduct.ercdex-staging.com
-              gsutil iam ch allUsers:objectViewer gs://aqueduct.ercdex-staging.com
-            fi
