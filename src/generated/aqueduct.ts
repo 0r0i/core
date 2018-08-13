@@ -478,6 +478,9 @@ Filled (2), Expired(3), Removed(4)
       dateUpdated: Date;
       txHash: string;
       taker: string;
+      /**
+       * Receipt status: success | error | pending
+       */
       status: string;
       side: string;
       takerAmount: string;
@@ -602,21 +605,6 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
 
     export interface ICancelOrdersRequest {
       cancellations: ICancelOrderData[];
-    }
-
-    export interface IDateSummary {
-      date: Date;
-      low?: number;
-      high?: number;
-      open?: number;
-      close?: number;
-      volume?: number;
-    }
-
-    export interface IHistoricalDataRequest {
-      baseTokenAddress: string;
-      quoteTokenAddress: string;
-      startDate: Date;
     }
 
     export interface ITokenTicker {
@@ -890,6 +878,15 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
       records: FillReceipt[];
     }
 
+    export interface ITradingViewLog {
+      time: number;
+      open: number;
+      high: number;
+      low: number;
+      close: number;
+      volume?: number;
+    }
+
     export interface TradeHistoryLog {
       /**
        * Unique Identifier
@@ -1137,10 +1134,6 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
       request: ICancelOrdersRequest;
     }
 
-    export interface IReportsGetHistoricalParams {
-      request: IHistoricalDataRequest;
-    }
-
     export interface ITickerGetParams {
       /**
        * Granularity of results
@@ -1188,6 +1181,13 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        * The token pair in the format BASE/QUOTE, e.g. ZRX/WETH
        */
       pair?: string;
+    }
+
+    export interface ITradingViewGetLogsParams {
+      pair: string;
+      resolution: string;
+      startDate: Date;
+      endDate: Date;
     }
 
     export interface ITradeHistoryLogsGetParams {
@@ -1536,29 +1536,10 @@ example: ZRX/WETH
     }
     export interface IReportsService {
 
-      /**
-       * Get historical data for order book
-       */
-      getHistorical(params: IReportsGetHistoricalParams, headers?: IAdditionalHeaders): Promise<IDateSummary[]>;
-
       getTickerData(headers?: IAdditionalHeaders): Promise<ITokenTicker[]>;
     }
 
     export class ReportsService extends ApiService implements IReportsService {
-
-      /**
-       * Get historical data for order book
-       */
-      public async getHistorical(params: IReportsGetHistoricalParams, headers?: IAdditionalHeaders) {
-        const requestParams: IRequestParams = {
-          method: 'POST',
-          url: `${baseApiUrl}/api/reports/historical`
-        };
-
-        requestParams.body = params.request;
-        requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IDateSummary[]>(requestParams, headers);
-      }
 
       public async getTickerData(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
@@ -1703,6 +1684,29 @@ example: ZRX/WETH
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IGetReceiptsResponse>(requestParams, headers);
+      }
+    }
+    export interface ITradingViewService {
+
+      getLogs(params: ITradingViewGetLogsParams, headers?: IAdditionalHeaders): Promise<ITradingViewLog[]>;
+    }
+
+    export class TradingViewService extends ApiService implements ITradingViewService {
+
+      public async getLogs(params: ITradingViewGetLogsParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'GET',
+          url: `${baseApiUrl}/api/trading_view`
+        };
+
+        requestParams.queryParameters = {
+          pair: params.pair,
+          resolution: params.resolution,
+          startDate: params.startDate,
+          endDate: params.endDate,
+        };
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<ITradingViewLog[]>(requestParams, headers);
       }
     }
     export interface ITradeHistoryLogsService {
@@ -2048,6 +2052,9 @@ export interface FillReceiptLog {
 export interface FillReceipt {
   txHash: string;
   taker: string;
+  /**
+   * Receipt status: success | error | pending
+   */
   status: ("error" | "pending" | "success");
   side: ("buy" | "sell");
   takerAmount: string;
@@ -2224,6 +2231,9 @@ export interface IFillReceiptChangeData {
 export interface FillReceipt {
   txHash: string;
   taker: string;
+  /**
+   * Receipt status: success | error | pending
+   */
   status: ("error" | "pending" | "success");
   side: ("buy" | "sell");
   takerAmount: string;
