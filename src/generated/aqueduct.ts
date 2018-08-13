@@ -608,14 +608,9 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
     }
 
     export interface ITokenTicker {
-      id: string;
-      name: string;
       symbol: string;
       usdPrice: string;
-      btcPrice: string;
-      hourlyPercentageChange: string;
       dailyPercentageChange: string;
-      weeklyPercentageChange: string;
       dailyVolume: string;
       priceEth: string;
     }
@@ -2161,14 +2156,9 @@ export interface ITickerSubscriptionData {
   
 }
 export interface ITokenTicker {
-  id: string;
-  name: string;
   symbol: string;
   usdPrice: string;
-  btcPrice: string;
-  hourlyPercentageChange: string;
   dailyPercentageChange: string;
-  weeklyPercentageChange: string;
   dailyVolume: string;
   priceEth: string;
   
