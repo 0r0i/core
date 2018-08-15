@@ -38,5 +38,4 @@ const getSwaggerJson = () => {
   };
 
   fs.writeFileSync('./swagger.json', JSON.stringify(spec));
-  fs.writeFileSync('./docs/src/swagger.json', JSON.stringify(spec));
 })();

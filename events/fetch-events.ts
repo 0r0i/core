@@ -22,5 +22,4 @@ const getEventJson = () => {
 (async () => {
   const spec = await getEventJson();
   fs.writeFileSync('./events.json', JSON.stringify(spec));
-  fs.writeFileSync('./docs/src/events.json', JSON.stringify(spec));
 })();

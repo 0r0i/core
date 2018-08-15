@@ -597,8 +597,7 @@ Filled (2), Expired(3), Removed(4)
        */
       orderHash: string;
       /**
-       * Signed message indicating intent to cancel
-Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
+       * Signed message indicating intent to cancel. Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        */
       signature: string;
     }
@@ -838,7 +837,7 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        */
       pair: string;
       /**
-       * Trade side: &#x27;buy&#x27; or &#x27;sell&#x27;
+       * Trade side: buy or sell
        */
       side: string;
       /**
@@ -1131,10 +1130,7 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
 
     export interface ITickerGetParams {
       /**
-       * Granularity of results
-24h (1 day)
-1w (1 week)
-1mo (1 month)
+       * Granularity of results: 24h (1 day), 1w (1 week), 1mo (1 month)
        */
       granularity?: string;
     }
@@ -1195,14 +1191,11 @@ Sign a hex of a message with format &#x60;cancel:ORDER_HASH_GOES_HERE&#x60;
        */
       per_page?: number;
       /**
-       * Sort order (default: &#x27;date&#x27;)
-date: Sort by trade date
+       * Sort order (default: &#x27;date&#x27;). date: Sort by trade date
        */
       sort_order?: string;
       /**
-       * Sort direction (default: &#x27;desc&#x27;)
-asc: Ascending
-desc: Descending
+       * Sort direction (default: &#x27;desc&#x27;). Options: asc: Ascending, desc: Descending
        */
       sort_direction?: string;
       /**
@@ -1258,25 +1251,19 @@ desc: Descending
        */
       trader?: string;
       /**
-       * Minimum trade date
-format (UTC): 2017-01-01T00:00:00.000Z
+       * Minimum trade date: format (UTC): 2017-01-01T00:00:00.000Z
        */
       min_date?: Date;
       /**
-       * Maximum trade date
-format (UTC): 2017-01-01T00:00:00.000Z
+       * Maximum trade date. Format (UTC): 2017-01-01T00:00:00.000Z
        */
       max_date?: Date;
       /**
-       * Result format (default: &#x27;json&#x27;)
-options: &#x27;json&#x27;, &#x27;csv&#x27;
-CSV: Page size limited to 10000 records
+       * Result format (default: &#x27;json&#x27;). Options: &#x27;json&#x27;, &#x27;csv&#x27;. CSV: Page size limited to 10000 records
        */
       format?: string;
       /**
-       * Token pair
-format: base_token_symbol/quote_token_symbol
-example: ZRX/WETH
+       * Token pair. Format: base_token_symbol/quote_token_symbol. Example: ZRX/WETH
        */
       pair?: string;
     }
@@ -1290,7 +1277,7 @@ example: ZRX/WETH
       public async get(params: IAggregatedOrdersGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/aggregated_orders`
+          url: `${baseApiUrl}/api/v1/aggregated_orders`
         };
 
         requestParams.queryParameters = {
@@ -1349,7 +1336,7 @@ example: ZRX/WETH
       public async getSupportedNetwork(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/networks`
+          url: `${baseApiUrl}/api/v1/networks`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<INetwork>(requestParams, headers);
@@ -1361,7 +1348,7 @@ example: ZRX/WETH
       public async isMaintenance(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/networks/maintenance`
+          url: `${baseApiUrl}/api/v1/networks/maintenance`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IMaintenanceStatus>(requestParams, headers);
@@ -1383,7 +1370,7 @@ example: ZRX/WETH
       public async get(params: INotificationsGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/notifications`
+          url: `${baseApiUrl}/api/v1/notifications`
         };
 
         requestParams.queryParameters = {
@@ -1539,7 +1526,7 @@ example: ZRX/WETH
       public async getTickerData(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/reports/ticker`
+          url: `${baseApiUrl}/api/v1/reports/ticker`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<ITokenTicker[]>(requestParams, headers);
@@ -1555,7 +1542,7 @@ example: ZRX/WETH
       public async get(params: ITickerGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/ticker`
+          url: `${baseApiUrl}/api/v1/ticker`
         };
 
         requestParams.queryParameters = {
@@ -1691,7 +1678,7 @@ example: ZRX/WETH
       public async getLogs(params: ITradingViewGetLogsParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/trading_view`
+          url: `${baseApiUrl}/api/v1/trading_view`
         };
 
         requestParams.queryParameters = {
@@ -1714,7 +1701,7 @@ example: ZRX/WETH
       public async get(params: ITradeHistoryLogsGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/trade_history_logs`
+          url: `${baseApiUrl}/api/v1/trade_history_logs`
         };
 
         requestParams.queryParameters = {
