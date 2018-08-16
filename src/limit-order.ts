@@ -1,6 +1,6 @@
-import { Order, Provider, ZeroEx } from '0x.js';
+import { Order, Provider, SignerType, ZeroEx } from '0x.js';
 import { BigNumber } from 'bignumber.js';
-import { Aqueduct } from './generated/aqueduct';
+import { ErcDex } from './generated/ercdex';
 import { SigningUtils } from './signing-utils';
 import { tokenCache } from './token-cache';
 import { Web3EnabledService } from './web3-enabled-service';
@@ -43,20 +43,15 @@ export interface ILimitOrderParams {
    */
   expirationDate?: Date;
 
-  /**
-   * https://github.com/0xProject/0x-monorepo/pull/349
-   *
-   * Some signers add the personal prefix themselves, some don't
-   */
-  shouldPrefix: boolean;
+  signerType: SignerType;
 }
 
 interface IValidateParams {
   makerAssetAmount: BigNumber;
   takerAssetAmount: BigNumber;
-  makerToken: Aqueduct.Api.IToken;
-  takerToken: Aqueduct.Api.IToken;
-  tokenPair: Aqueduct.Api.ITokenPair;
+  makerToken: ErcDex.Api.IToken;
+  takerToken: ErcDex.Api.IToken;
+  tokenPair: ErcDex.Api.ITokenPair;
 }
 
 export const nullAddress = '0x0000000000000000000000000000000000000000';
@@ -65,7 +60,7 @@ export const denormalizedTokenPrice = (value: BigNumber, decimals: number) => {
   return value.times(new BigNumber(10).pow(18 - decimals));
 };
 
-export class LimitOrder extends Web3EnabledService<Aqueduct.Api.Order> {
+export class LimitOrder extends Web3EnabledService<ErcDex.Api.Order> {
   constructor(private readonly params: ILimitOrderParams) {
     super(params.provider);
   }
@@ -84,9 +79,9 @@ export class LimitOrder extends Web3EnabledService<Aqueduct.Api.Order> {
     }
 
     let makerAssetAmount: BigNumber;
-    let makerToken: Aqueduct.Api.IToken;
+    let makerToken: ErcDex.Api.IToken;
     let takerAssetAmount: BigNumber;
-    let takerToken: Aqueduct.Api.IToken;
+    let takerToken: ErcDex.Api.IToken;
 
     if (this.params.type === 'buy') {
       makerToken = quoteToken;
@@ -105,9 +100,9 @@ export class LimitOrder extends Web3EnabledService<Aqueduct.Api.Order> {
     const zeroEx = this.zeroEx;
     const exchangeAddress = await zeroEx.exchange.getContractAddress();
 
-    let orderConfig: Aqueduct.Api.IOrderConfig;
+    let orderConfig: ErcDex.Api.IOrderConfig;
     try {
-      orderConfig = await new Aqueduct.Api.OrdersService().getOrderConfig({
+      orderConfig = await new ErcDex.Api.OrdersService().getOrderConfig({
         exchangeAddress,
         makerAddress: this.params.account,
         makerAssetAmount: makerAssetAmount.toString(),
@@ -147,7 +142,7 @@ export class LimitOrder extends Web3EnabledService<Aqueduct.Api.Order> {
       makerAssetAmount,
       takerAssetAmount,
       expirationTimeSeconds,
-      shouldPrefix: this.params.shouldPrefix
+      signerType: this.params.signerType
     };
 
     let signatureResults: { order: Order; signature: string };
@@ -159,7 +154,7 @@ export class LimitOrder extends Web3EnabledService<Aqueduct.Api.Order> {
     }
 
     const { order, signature } = signatureResults;
-    const createdOrder = await new Aqueduct.Api.OrdersService().createOrder({
+    const createdOrder = await new ErcDex.Api.OrdersService().createOrder({
       request: {
         makerAddress: signOrderParams.makerAddress,
         makerAssetData: order.makerAssetData,

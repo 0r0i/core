@@ -1,8 +1,8 @@
-import { Aqueduct } from './generated/aqueduct';
+import { ErcDex } from './generated/ercdex';
 
 export class TokenCache {
-  private tokenPairsPromise: Promise<Aqueduct.Api.ITokenPair[]> | undefined;
-  private tokenSymbolMap: Record<string, Aqueduct.Api.IToken> | undefined;
+  private tokenPairsPromise: Promise<ErcDex.Api.ITokenPair[]> | undefined;
+  private tokenSymbolMap: Record<string, ErcDex.Api.IToken> | undefined;
 
   public async getTokenPair(baseSymbol: string, quoteSymbol: string) {
     const tokenPairs = await this.getSupportedTokenPairs();
@@ -33,7 +33,7 @@ export class TokenCache {
     }
 
     const promise = this.tokenPairsPromise = (async () => {
-      const result = await new Aqueduct.Api.AssetPairsService().get({});
+      const result = await new ErcDex.Api.AssetPairsService().get({});
       return result.records;
     })();
     return await promise;
@@ -44,7 +44,7 @@ export class TokenCache {
 
     const tokenPairs = await this.getSupportedTokenPairs();
 
-    const map: Record<string, Aqueduct.Api.IToken> = {};
+    const map: Record<string, ErcDex.Api.IToken> = {};
     tokenPairs.forEach(tp => {
       map[tp.assetDataA.symbol] = tp.assetDataA;
       map[tp.assetDataB.symbol] = tp.assetDataB;

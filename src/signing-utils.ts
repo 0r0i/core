@@ -1,6 +1,6 @@
-import { ZeroEx } from '0x.js';
-import { EIP712Schema, EIP712Types, EIP712Utils, MessagePrefixType } from '@0xproject/order-utils';
-import { Order, SignatureType } from '@0xproject/types';
+import { SignerType, ZeroEx } from '0x.js';
+import { EIP712Schema, EIP712Types, EIP712Utils } from '@0xproject/order-utils';
+import { Order } from '@0xproject/types';
 import { BigNumber } from '@0xproject/utils';
 import * as ethUtil from 'ethereumjs-util';
 
@@ -14,31 +14,13 @@ const EIP712_ZEROEX_TRANSACTION_SCHEMA: EIP712Schema = {
 };
 
 export const SigningUtils = {
-  rsvToSignature(ecSignature: ECSignature): string {
-    const signatureBuffer = Buffer.concat([
-      ethUtil.toBuffer(ecSignature.v),
-      ethUtil.toBuffer(ecSignature.r),
-      ethUtil.toBuffer(ecSignature.s),
-      ethUtil.toBuffer(SignatureType.EthSign),
-    ]);
-    return `0x${signatureBuffer.toString('hex')}`;
-  },
   async signMessageAsync(
     zeroEx: ZeroEx,
     hexMessage: string,
     address: string,
-    signatureType: SignatureType,
-    shouldPrefix: boolean
+    signerType: SignerType
   ) {
-    if (signatureType === SignatureType.EthSign) {
-      const rpcSig = await zeroEx.ecSignOrderHashAsync(hexMessage, address, {
-        prefixType: MessagePrefixType.EthSign,
-        shouldAddPrefixBeforeCallingEthSign: shouldPrefix
-      });
-      return this.rsvToSignature(rpcSig);
-    } else {
-      throw new Error(`${signatureType} is not a valid signature type`);
-    }
+    return await zeroEx.ecSignOrderHashAsync(hexMessage, address, signerType);
   },
   getExecuteTransactionHex(data: string, salt: BigNumber, signerAddress: string, exchangeAddress: string): string {
     const executeTransactionData = {
@@ -57,16 +39,14 @@ export const SigningUtils = {
     zeroEx: ZeroEx,
     executeTransactionHex: string,
     signerAddress: string,
-    signatureType: SignatureType = SignatureType.EthSign,
-    shouldPrefix: boolean
+    signerType: SignerType
   ): Promise<string> {
     const eip721MessageBuffer = ethUtil.toBuffer(executeTransactionHex);
     const signature = await SigningUtils.signMessageAsync(
       zeroEx,
       '0x' + eip721MessageBuffer.toString('hex'),
       signerAddress,
-      signatureType,
-      shouldPrefix
+      signerType
     );
     return signature;
   },
@@ -83,12 +63,12 @@ export const SigningUtils = {
     makerFee: BigNumber,
     takerFee: BigNumber,
     expirationTimeSeconds: BigNumber,
-    shouldPrefix: boolean
+    signerType: SignerType
   }) {
     const {
       zeroEx, makerAddress, makerAssetAddress, takerAssetAddress, senderAddress,
       exchangeAddress, feeRecipientAddress, makerAssetAmount, takerAssetAmount,
-      makerFee, takerFee, expirationTimeSeconds, shouldPrefix
+      makerFee, takerFee, expirationTimeSeconds, signerType
     } = params;
 
     const order: Order = {
@@ -108,14 +88,11 @@ export const SigningUtils = {
     };
 
     const orderHash = ZeroEx.getOrderHashHex(order);
-    const ecSignature = await zeroEx.ecSignOrderHashAsync(orderHash, makerAddress, {
-      prefixType: MessagePrefixType.EthSign,
-      shouldAddPrefixBeforeCallingEthSign: shouldPrefix
-    });
+    const signature = await zeroEx.ecSignOrderHashAsync(orderHash, makerAddress, signerType);
 
     return {
       order,
-      signature: SigningUtils.rsvToSignature(ecSignature)
+      signature
     };
   }
 };

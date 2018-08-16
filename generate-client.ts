@@ -76,7 +76,7 @@ import { ApiService, IAdditionalHeaders, IRequestParams } from '../api-service';
 import { tokenCache, TokenCache } from '../token-cache';
 const ReconnectingWebsocket = require('reconnecting-websocket');
 
-export namespace Aqueduct {
+export namespace ErcDex {
   export let socket: WebSocket;
   let baseApiUrl: string;
   let apiKeyId: string | undefined;
@@ -588,7 +588,7 @@ const replaceAll = (value: string, pattern: string, replacement: string) => {
 
   try {
     const compiled = template(eventModelContent)(getTemplateView(spec, eventSchema));
-    fs.writeFileSync(`${__dirname}/src/generated/aqueduct.ts`, compiled);
+    fs.writeFileSync(`${__dirname}/src/generated/ercdex.ts`, compiled);
     console.log('Api file generated!');
   } catch (err) {
     console.log(err);

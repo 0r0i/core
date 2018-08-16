@@ -3,7 +3,7 @@ import { ApiService, IAdditionalHeaders, IRequestParams } from '../api-service';
 import { tokenCache, TokenCache } from '../token-cache';
 const ReconnectingWebsocket = require('reconnecting-websocket');
 
-export namespace Aqueduct {
+export namespace ErcDex {
   export let socket: WebSocket;
   let baseApiUrl: string;
   let apiKeyId: string | undefined;

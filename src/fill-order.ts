@@ -1,6 +1,5 @@
-import { Provider } from '0x.js';
-import { SignatureType } from '@0xproject/types';
-import { Aqueduct } from './generated/aqueduct';
+import { Provider, SignerType } from '0x.js';
+import { ErcDex } from './generated/ercdex';
 import { SigningUtils } from './signing-utils';
 import { Web3EnabledService } from './web3-enabled-service';
 
@@ -10,23 +9,23 @@ export interface IFillOrderParams {
   /**
    * Collection of orders and fill amounts
    */
-  fills: Aqueduct.Api.IOrderFill[];
+  fills: ErcDex.Api.IOrderFill[];
 
   /**
    * Account filling order
    */
   taker: string;
 
-  shouldPrefix: boolean;
+  signerType: SignerType;
 }
 
-export class FillOrders extends Web3EnabledService<Aqueduct.Api.FillReceipt> {
+export class FillOrders extends Web3EnabledService<ErcDex.Api.FillReceipt> {
   constructor(private readonly params: IFillOrderParams) {
     super(params.provider);
   }
 
   protected async run() {
-    const quote = await new Aqueduct.Api.TradeService().requestFill({
+    const quote = await new ErcDex.Api.TradeService().requestFill({
       request: {
         fills: this.params.fills,
         taker: this.params.taker
@@ -37,11 +36,10 @@ export class FillOrders extends Web3EnabledService<Aqueduct.Api.FillReceipt> {
       await this.zeroEx,
       quote.hex,
       this.params.taker,
-      SignatureType.EthSign,
-      this.params.shouldPrefix
+      this.params.signerType
     );
 
-    const receipt = await new Aqueduct.Api.TradeService().fill({
+    const receipt = await new ErcDex.Api.TradeService().fill({
       request: {
         quoteId: quote.id,
         signature

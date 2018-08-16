@@ -1,7 +1,8 @@
+import { SignerType } from '0x.js';
 import { BigNumber } from 'bignumber.js';
 import { expect } from 'chai';
 import { CancelOrder } from '../cancel-order';
-import { Aqueduct } from '../generated/aqueduct';
+import { ErcDex } from '../generated/ercdex';
 import { LimitOrder } from '../limit-order';
 import { DEFAULT_TX_OPTIONS, RELAYER_WALLET_ADDRESS } from './utils/constants';
 import { EventSink } from './utils/event-sink';
@@ -18,13 +19,13 @@ describe('LimitOrder', () => {
       quoteTokenSymbol: 'TOKEN',
       quantityInWei: new BigNumber(1),
       type: 'buy',
-      shouldPrefix: false
+      signerType: SignerType.Default
     }).execute());
     expect(err.message).to.equal('token pair not found or supported: FAKE/TOKEN');
   });
 
   it('should reject when quantity is below minAmount', async () => {
-    const tokenPair = await Aqueduct.Utils.Tokens.getTokenPair('ZRX', 'WETH');
+    const tokenPair = await ErcDex.Utils.Tokens.getTokenPair('ZRX', 'WETH');
     const quantityInWei = new BigNumber(tokenPair.minAmount).minus(.1);
 
     const err: Error = await shouldThrow(() => new LimitOrder({
@@ -35,13 +36,13 @@ describe('LimitOrder', () => {
       quoteTokenSymbol: 'WETH',
       quantityInWei,
       type: 'buy',
-      shouldPrefix: false
+      signerType: SignerType.Default
     }).execute());
     expect(err.message).to.equal(`order quantity must be greater than minimum allowed amount: ${quantityInWei}/${tokenPair.minAmount}`);
   });
 
   it('should reject when quantity is not an integer', async () => {
-    const tokenPair = await Aqueduct.Utils.Tokens.getTokenPair('ZRX', 'WETH');
+    const tokenPair = await ErcDex.Utils.Tokens.getTokenPair('ZRX', 'WETH');
     const quantityInWei = new BigNumber(tokenPair.minAmount).plus(.1);
 
     const err: Error = await shouldThrow(() => new LimitOrder({
@@ -52,14 +53,14 @@ describe('LimitOrder', () => {
       quoteTokenSymbol: 'WETH',
       quantityInWei,
       type: 'buy',
-      shouldPrefix: false
+      signerType: SignerType.Default
     }).execute());
     expect(err.message).to.equal(`order quantity must be an integer, got ${quantityInWei.toString()}`);
   });
 
   it('should reject when insufficient balance', async () => {
     const zeroEx = await zeroExFn();
-    const zrxToken = await Aqueduct.Utils.Tokens.getTokenBySymbol('ZRX');
+    const zrxToken = await ErcDex.Utils.Tokens.getTokenBySymbol('ZRX');
     const zrxBalance = await zeroEx.erc20Token.getBalanceAsync(zrxToken.address, RELAYER_WALLET_ADDRESS);
 
     const err: Error = await shouldThrow(() => new LimitOrder({
@@ -70,14 +71,14 @@ describe('LimitOrder', () => {
       quoteTokenSymbol: 'WETH',
       quantityInWei: zrxBalance.plus(1),
       type: 'sell',
-      shouldPrefix: false
+      signerType: SignerType.Default
     }).execute());
     expect(err.message).to.equal(`insufficient token balance`);
   });
 
   it('should reject when insufficient allowance', async () => {
     const zeroEx = await zeroExFn();
-    const tokenPair = await Aqueduct.Utils.Tokens.getTokenPair('ZRX', 'WETH');
+    const tokenPair = await ErcDex.Utils.Tokens.getTokenPair('ZRX', 'WETH');
     const minAmount = new BigNumber(tokenPair.minAmount);
 
     await zeroEx.erc20Token.setProxyAllowanceAsync(tokenPair.assetDataA.address, RELAYER_WALLET_ADDRESS, new BigNumber(0), DEFAULT_TX_OPTIONS);
@@ -90,7 +91,7 @@ describe('LimitOrder', () => {
       quoteTokenSymbol: 'WETH',
       quantityInWei: minAmount,
       type: 'sell',
-      shouldPrefix: false
+      signerType: SignerType.Default
     }).execute());
     expect(err.message).to.equal(`insufficient allowance`);
 
@@ -99,11 +100,11 @@ describe('LimitOrder', () => {
   });
 
   it('should be able to create a new order', async () => {
-    const tokenPair = await Aqueduct.Utils.Tokens.getTokenPair('ZRX', 'WETH');
+    const tokenPair = await ErcDex.Utils.Tokens.getTokenPair('ZRX', 'WETH');
     const minAmount = new BigNumber(tokenPair.minAmount);
 
-    const accountOrderSink = new EventSink(new Aqueduct.Events.AccountOrderChange(), { account: RELAYER_WALLET_ADDRESS });
-    const pairOrderSink = new EventSink(new Aqueduct.Events.PairOrderChange(), { baseSymbol: 'ZRX', quoteSymbol: 'WETH' });
+    const accountOrderSink = new EventSink(new ErcDex.Events.AccountOrderChange(), { account: RELAYER_WALLET_ADDRESS });
+    const pairOrderSink = new EventSink(new ErcDex.Events.PairOrderChange(), { baseSymbol: 'ZRX', quoteSymbol: 'WETH' });
 
     const order = await new LimitOrder({
       account: RELAYER_WALLET_ADDRESS,
@@ -113,7 +114,7 @@ describe('LimitOrder', () => {
       quoteTokenSymbol: 'WETH',
       quantityInWei: minAmount,
       type: 'sell',
-      shouldPrefix: false
+      signerType: SignerType.Default
     }).execute();
     expect(order.price).to.equal('0.0005');
 
@@ -128,7 +129,7 @@ describe('LimitOrder', () => {
     const result = await new CancelOrder({
       order,
       provider: web3Wrapper().getProvider(),
-      shouldPrefix: false
+      signerType: SignerType.Default
     }).execute();
     expect(result.orderHash).to.equal(order.orderHash);
     expect(result.success).to.equal(true);

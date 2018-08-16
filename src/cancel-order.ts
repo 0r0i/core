@@ -1,7 +1,6 @@
-import { Provider } from '0x.js';
-import { SignatureType } from '@0xproject/types';
+import { Provider, SignerType } from '0x.js';
 import * as ethUtil from 'ethereumjs-util';
-import { Aqueduct } from './generated/aqueduct';
+import { ErcDex } from './generated/ercdex';
 import { SigningUtils } from './signing-utils';
 import { Web3EnabledService } from './web3-enabled-service';
 
@@ -14,15 +13,15 @@ export interface ICancelOrderParams {
   /**
    * Order
    */
-  order: Aqueduct.Api.Order;
+  order: ErcDex.Api.Order;
 
-  shouldPrefix: boolean;
+  signerType: SignerType;
 }
 
 /**
  * Cancel an order by orderHash; returns txHash if successful
  */
-export class CancelOrder extends Web3EnabledService<Aqueduct.Api.ICancelOrderResult> {
+export class CancelOrder extends Web3EnabledService<ErcDex.Api.ICancelOrderResult> {
   constructor(private readonly params: ICancelOrderParams) {
     super(params.provider);
 
@@ -32,7 +31,7 @@ export class CancelOrder extends Web3EnabledService<Aqueduct.Api.ICancelOrderRes
   }
 
   protected async run() {
-    const results = await new Aqueduct.Api.OrdersService().cancel({
+    const results = await new ErcDex.Api.OrdersService().cancel({
       request: {
         cancellations: [
           {
@@ -41,8 +40,7 @@ export class CancelOrder extends Web3EnabledService<Aqueduct.Api.ICancelOrderRes
               this.zeroEx,
               '0x' + ethUtil.sha3(`cancel:${this.params.order.orderHash}`).toString('hex'),
               this.params.order.makerAddress,
-              SignatureType.EthSign,
-              this.params.shouldPrefix
+              this.params.signerType
             )
           }
         ]

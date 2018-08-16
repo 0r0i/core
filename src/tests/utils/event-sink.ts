@@ -1,4 +1,4 @@
-import { Aqueduct } from '../../generated/aqueduct';
+import { ErcDex } from '../../generated/ercdex';
 import { sleep } from './sleep';
 
 /**
@@ -8,7 +8,7 @@ export class EventSink<T, D> {
   public readonly events = new Array<D>();
 
   constructor(
-    subscription: Aqueduct.Events.SocketEvent<T, D>,
+    subscription: ErcDex.Events.SocketEvent<T, D>,
     params: T
   ) {
     subscription.subscribe(params, data => {

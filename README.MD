@@ -26,12 +26,12 @@ The SDK can be thought of as containing four 'types' of actions:
 
 ### Initialization
 
-Aqueduct.Initialize *must* be called before interacting with the SDK in any way.
+ErcDex.Initialize *must* be called before interacting with the SDK in any way.
 
 ```
-import { Aqueduct } from 'aqueduct';
+import { ErcDex } from '@ercdex/client';
 
-Aqueduct.Initialize();
+ErcDex.Initialize();
 ```
 
 #### A note about WebSockets
@@ -54,11 +54,11 @@ Limit orders represent a brand new order with a quantity and price specified by 
 
 ```
 import { BigNumber } from 'bignumber.js';
-import { Aqueduct } from 'aqueduct';
+import { ErcDex } from '@ercdex/client';
 import { LimitOrder } from '../limit-order';
 import * as Web3 from 'web3';
 
-Aqueduct.Initialize();
+ErcDex.Initialize();
 
 (async () => {
   const order = await new LimitOrder({
@@ -90,11 +90,11 @@ Market orders attempt to fill existing orders at the best price. Traders placing
 
 ```
 import { BigNumber } from 'bignumber.js';
-import { Aqueduct, MarketOrder } from 'aqueduct';
+import { Aqueduct, MarketOrder } from '@ercdex/client';
 import * as Web3 from 'web3';
 
 // Initialize the Aqueduct client
-Aqueduct.Initialize();
+ErcDex.Initialize();
 
 (async () => {
   await new MarketOrder({
@@ -117,10 +117,10 @@ You may want to fill a single order rather than using the more advanced Market O
 ```
 import { ZeroEx } from '0x.js';
 import { BigNumber } from 'bignumber.js';
-import { Aqueduct, FillOrder } from 'aqueduct';
+import { Aqueduct, FillOrder } from '@ercdex/client';
 import * as Web3 from 'web3';
 
-Aqueduct.Initialize();
+ErcDex.Initialize();
 
 (async () => {
   await new FillOrder({
@@ -140,11 +140,11 @@ Aqueduct.Initialize();
 Traders can cancel limit orders that they've opened.
 
 ```
-import { Aqueduct, CancelOrder } from 'aqueduct';
+import { Aqueduct, CancelOrder } from '@ercdex/client';
 import * as Web3 from 'web3';
 
 (async () => {
-  Aqueduct.Initialize();
+  ErcDex.Initialize();
 
   const cancelResult = await new CancelOrder({
     order,
@@ -159,17 +159,17 @@ import * as Web3 from 'web3';
 
 ### Rest API Services
 
-The REST API SDK (conveniently located in the Aqueduct.Api namespace) is a simple service for interacting with REST endpoints. Domain objects are grouped logically into services. [See the full REST API documentation here.](https://aqueduct.ercdex.com/rest.html)
+The REST API SDK (conveniently located in the ErcDex.Api namespace) is a simple service for interacting with REST endpoints. Domain objects are grouped logically into services. [See the full REST API documentation here.](https://aqueduct.ercdex.com/rest.html)
 
 #### Getting a list of your open orders
 
 ```
-import { Aqueduct } from 'aqueduct';
+import { ErcDex } from '@ercdex/client';
 
-Aqueduct.Initialize();
+ErcDex.Initialize();
 
 (async () => {
-  const orders = await new Aqueduct.Api.OrdersService().get({
+  const orders = await new ErcDex.Api.OrdersService().get({
     makerAddress: '0x00be81aeb2c6b82c68123f49b4bf983224124ada'
   });
 
@@ -183,12 +183,12 @@ Aqueduct.Initialize();
 Event related functions are contained within the "Events" namespace. All events follow a simple subscription model, taking in parameters and a callback to handle the event feed. Subscriptions must be managed by the client and unused subscriptions should be `unsubscribed`.
 
 ```
-import { Aqueduct } from 'aqueduct';
+import { ErcDex } from '@ercdex/client';
 
 // Initialize client
-Aqueduct.Initialize();
+ErcDex.Initialize();
 
-const subscription = new Aqueduct.Events.AccountNotification().subscribe({
+const subscription = new ErcDex.Events.AccountNotification().subscribe({
   account: 'XXXX'
 }, data => {
   console.log(data);

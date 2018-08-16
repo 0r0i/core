@@ -1,10 +1,10 @@
 import * as ws from 'html5-websocket';
-import { Aqueduct } from '../generated/aqueduct';
+import { ErcDex } from '../generated/ercdex';
 
 before(() => {
   (global as any).WebSocket = ws;
 
-  Aqueduct.Initialize({
+  ErcDex.Initialize({
     host: 'localhost:8443'
   });
 });
