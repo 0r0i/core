@@ -147,7 +147,8 @@ import * as Web3 from 'web3';
   ErcDex.Initialize();
 
   const cancelResult = await new CancelOrder({
-    order,
+    orderHash: order.orderHash,
+    account: order.makerAddress,
     web3: new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
   }).execute();
 

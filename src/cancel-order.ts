@@ -11,9 +11,11 @@ export interface ICancelOrderParams {
   provider: Provider;
 
   /**
-   * Order
+   * Order hash
    */
-  order: ErcDex.Api.Order;
+  orderHash: string;
+
+  account: string;
 
   signerType: SignerType;
 }
@@ -25,8 +27,8 @@ export class CancelOrder extends Web3EnabledService<ErcDex.Api.ICancelOrderResul
   constructor(private readonly params: ICancelOrderParams) {
     super(params.provider);
 
-    if (!params.order) {
-      throw new Error('no order provided');
+    if (!params.orderHash) {
+      throw new Error('no orderHash provided');
     }
   }
 
@@ -35,11 +37,11 @@ export class CancelOrder extends Web3EnabledService<ErcDex.Api.ICancelOrderResul
       request: {
         cancellations: [
           {
-            orderHash: this.params.order.orderHash,
+            orderHash: this.params.orderHash,
             signature: await SigningUtils.signMessageAsync(
               this.zeroEx,
-              '0x' + ethUtil.sha3(`cancel:${this.params.order.orderHash}`).toString('hex'),
-              this.params.order.makerAddress,
+              '0x' + ethUtil.sha3(`cancel:${this.params.orderHash}`).toString('hex'),
+              this.params.account,
               this.params.signerType
             )
           }

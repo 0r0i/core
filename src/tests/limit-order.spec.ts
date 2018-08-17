@@ -127,7 +127,8 @@ describe('LimitOrder', () => {
 
     // cancel the order
     const result = await new CancelOrder({
-      order,
+      orderHash: order.orderHash,
+      account: order.makerAddress,
       provider: web3Wrapper().getProvider(),
       signerType: SignerType.Default
     }).execute();
