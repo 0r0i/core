@@ -25,7 +25,7 @@ API keys are used to identify your account when making API calls using Aqueduct 
 ### Initializing Aqueduct Client with API Key
 
 ```
-import { ErcDex } from '@ercdex/client';
+import { ErcDex } from '@ercdex/core';
 
 Aqueduct.Initialize({
     apiKeyId: 'xxxxx'

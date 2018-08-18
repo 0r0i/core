@@ -29,7 +29,7 @@ The SDK can be thought of as containing four 'types' of actions:
 ErcDex.Initialize *must* be called before interacting with the SDK in any way.
 
 ```
-import { ErcDex } from '@ercdex/client';
+import { ErcDex } from '@ercdex/core';
 
 ErcDex.Initialize();
 ```
@@ -54,7 +54,7 @@ Limit orders represent a brand new order with a quantity and price specified by 
 
 ```
 import { BigNumber } from 'bignumber.js';
-import { ErcDex } from '@ercdex/client';
+import { ErcDex } from '@ercdex/core';
 import { LimitOrder } from '../limit-order';
 import * as Web3 from 'web3';
 
@@ -90,7 +90,7 @@ Market orders attempt to fill existing orders at the best price. Traders placing
 
 ```
 import { BigNumber } from 'bignumber.js';
-import { Aqueduct, MarketOrder } from '@ercdex/client';
+import { Aqueduct, MarketOrder } from '@ercdex/core';
 import * as Web3 from 'web3';
 
 // Initialize the Aqueduct client
@@ -117,7 +117,7 @@ You may want to fill a single order rather than using the more advanced Market O
 ```
 import { ZeroEx } from '0x.js';
 import { BigNumber } from 'bignumber.js';
-import { Aqueduct, FillOrder } from '@ercdex/client';
+import { Aqueduct, FillOrder } from '@ercdex/core';
 import * as Web3 from 'web3';
 
 ErcDex.Initialize();
@@ -140,7 +140,7 @@ ErcDex.Initialize();
 Traders can cancel limit orders that they've opened.
 
 ```
-import { Aqueduct, CancelOrder } from '@ercdex/client';
+import { Aqueduct, CancelOrder } from '@ercdex/core';
 import * as Web3 from 'web3';
 
 (async () => {
@@ -165,7 +165,7 @@ The REST API SDK (conveniently located in the ErcDex.Api namespace) is a simple 
 #### Getting a list of your open orders
 
 ```
-import { ErcDex } from '@ercdex/client';
+import { ErcDex } from '@ercdex/core';
 
 ErcDex.Initialize();
 
@@ -184,7 +184,7 @@ ErcDex.Initialize();
 Event related functions are contained within the "Events" namespace. All events follow a simple subscription model, taking in parameters and a callback to handle the event feed. Subscriptions must be managed by the client and unused subscriptions should be `unsubscribed`.
 
 ```
-import { ErcDex } from '@ercdex/client';
+import { ErcDex } from '@ercdex/core';
 
 // Initialize client
 ErcDex.Initialize();

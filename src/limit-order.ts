@@ -44,6 +44,8 @@ export interface ILimitOrderParams {
   expirationDate?: Date;
 
   signerType: SignerType;
+
+  shouldValidate?: boolean;
 }
 
 interface IValidateParams {
@@ -117,13 +119,15 @@ export class LimitOrder extends Web3EnabledService<ErcDex.Api.Order> {
       throw err;
     }
 
-    await this.validateRequest({
-      takerAssetAmount,
-      makerAssetAmount,
-      makerToken,
-      takerToken,
-      tokenPair
-    });
+    if (this.params.shouldValidate !== false) {
+      await this.validateRequest({
+        takerAssetAmount,
+        makerAssetAmount,
+        makerToken,
+        takerToken,
+        tokenPair
+      });
+    }
 
     const expirationTimeSeconds = new BigNumber(!this.params.expirationDate
       ? 4102444800
