@@ -54,7 +54,7 @@ export namespace ErcDex {
 
     hasWebSocket = typeof WebSocket !== 'undefined';
     if (!hasWebSocket) {
-      console.warn('No WebSocket found in global namespace; subscriptions will not be configured.');
+      // console.warn('No WebSocket found in global namespace; subscriptions will not be configured.');
       return;
     }
 
