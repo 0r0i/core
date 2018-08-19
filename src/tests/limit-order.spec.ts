@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { CancelOrder } from '../cancel-order';
 import { ErcDex } from '../generated/ercdex';
 import { LimitOrder } from '../limit-order';
+import { tokenCache } from '../token-cache';
 import { DEFAULT_TX_OPTIONS, RELAYER_WALLET_ADDRESS } from './utils/constants';
 import { EventSink } from './utils/event-sink';
 import { shouldThrow } from './utils/should-throw';
@@ -25,7 +26,7 @@ describe('LimitOrder', () => {
   });
 
   it('should reject when quantity is below minAmount', async () => {
-    const tokenPair = await ErcDex.Utils.Tokens.getTokenPair('ZRX', 'WETH');
+    const tokenPair = await tokenCache.getTokenPair('ZRX', 'WETH');
     const quantityInWei = new BigNumber(tokenPair.minAmount).minus(.1);
 
     const err: Error = await shouldThrow(() => new LimitOrder({
@@ -42,7 +43,7 @@ describe('LimitOrder', () => {
   });
 
   it('should reject when quantity is not an integer', async () => {
-    const tokenPair = await ErcDex.Utils.Tokens.getTokenPair('ZRX', 'WETH');
+    const tokenPair = await tokenCache.getTokenPair('ZRX', 'WETH');
     const quantityInWei = new BigNumber(tokenPair.minAmount).plus(.1);
 
     const err: Error = await shouldThrow(() => new LimitOrder({
@@ -60,7 +61,7 @@ describe('LimitOrder', () => {
 
   it('should reject when insufficient balance', async () => {
     const zeroEx = await zeroExFn();
-    const zrxToken = await ErcDex.Utils.Tokens.getTokenBySymbol('ZRX');
+    const zrxToken = await tokenCache.getTokenBySymbol('ZRX');
     const zrxBalance = await zeroEx.erc20Token.getBalanceAsync(zrxToken.address, RELAYER_WALLET_ADDRESS);
 
     const err: Error = await shouldThrow(() => new LimitOrder({
@@ -78,7 +79,7 @@ describe('LimitOrder', () => {
 
   it('should reject when insufficient allowance', async () => {
     const zeroEx = await zeroExFn();
-    const tokenPair = await ErcDex.Utils.Tokens.getTokenPair('ZRX', 'WETH');
+    const tokenPair = await tokenCache.getTokenPair('ZRX', 'WETH');
     const minAmount = new BigNumber(tokenPair.minAmount);
 
     await zeroEx.erc20Token.setProxyAllowanceAsync(tokenPair.assetDataA.address, RELAYER_WALLET_ADDRESS, new BigNumber(0), DEFAULT_TX_OPTIONS);
@@ -100,7 +101,7 @@ describe('LimitOrder', () => {
   });
 
   it('should be able to create a new order', async () => {
-    const tokenPair = await ErcDex.Utils.Tokens.getTokenPair('ZRX', 'WETH');
+    const tokenPair = await tokenCache.getTokenPair('ZRX', 'WETH');
     const minAmount = new BigNumber(tokenPair.minAmount);
 
     const accountOrderSink = new EventSink(new ErcDex.Events.AccountOrderChange(), { account: RELAYER_WALLET_ADDRESS });

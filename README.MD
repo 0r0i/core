@@ -78,8 +78,6 @@ ErcDex.Initialize();
   }).execute();
 
   console.log(order);
-
-  process.exit(0);
 })();
 
 ```
@@ -160,7 +158,7 @@ import * as Web3 from 'web3';
 
 ### Rest API Services
 
-The REST API SDK (conveniently located in the ErcDex.Api namespace) is a simple service for interacting with REST endpoints. Domain objects are grouped logically into services. [See the full REST API documentation here.](https://aqueduct.ercdex.com/rest.html)
+The REST API SDK (conveniently located in the ErcDex.Api namespace) is a simple service for interacting with REST endpoints. Domain objects are grouped logically into services. [See the full REST API documentation here.](https://docs.ercdex.com/#restapi)
 
 #### Getting a list of your open orders
 
@@ -202,9 +200,3 @@ subscription.unsubscribe();
 ## SDK Technical Documentation
 
 Documentation on available imports and client APIs can be found [here.](https://aqueduct.ercdex.com/client/modules/_aqueduct_.html)
-
-## Developer Environment
-
-- Run 'yarn' at the root
-- Run 'yarn' at /docs
-- Run 'yarn start:docs' from root to start developer site

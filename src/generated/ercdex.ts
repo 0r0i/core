@@ -1,6 +1,5 @@
 /* tslint:disable */
 import { ApiService, IAdditionalHeaders, IRequestParams } from '../api-service';
-import { tokenCache, TokenCache } from '../token-cache';
 const ReconnectingWebsocket = require('reconnecting-websocket');
 
 export namespace ErcDex {
@@ -54,7 +53,7 @@ export namespace ErcDex {
 
     hasWebSocket = typeof WebSocket !== 'undefined';
     if (!hasWebSocket) {
-      // console.warn('No WebSocket found in global namespace; subscriptions will not be configured.');
+      console.warn('No WebSocket found in global namespace; subscriptions will not be configured.');
       return;
     }
 
@@ -2646,9 +2645,5 @@ export interface IPairReceiptChangeParams {
     export class PairFillReceiptChange extends SocketEvent<IPairReceiptChangeParams, IFillReceiptChangeData> implements IPairFillReceiptChange {
       protected path = 'pair-fill-receipt-change/:baseSymbol/:quoteSymbol';
     }
-  }
-
-  export namespace Utils {
-    export const Tokens: TokenCache = tokenCache;
   }
 }

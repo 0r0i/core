@@ -4,13 +4,14 @@ import { expect } from 'chai';
 import { FillOrders } from '../fill-order';
 import { ErcDex } from '../generated/ercdex';
 import { LimitOrder } from '../limit-order';
+import { tokenCache } from '../token-cache';
 import { RELAYER_WALLET_ADDRESS, TRADER_ADDRESS } from './utils/constants';
 import { EventSink } from './utils/event-sink';
 import { web3Wrapper } from './utils/web3-provider';
 
 describe('FillOrders', () => {
   it('should be able to fill order', async () => {
-    const tokenPair = await ErcDex.Utils.Tokens.getTokenPair('ZRX', 'WETH');
+    const tokenPair = await tokenCache.getTokenPair('ZRX', 'WETH');
     const minAmount = new BigNumber(tokenPair.minAmount);
 
     const order = await new LimitOrder({

@@ -73,7 +73,6 @@ if (!baseApiUrl) {
 
 const template = (eventModelContent: string) => handlebars.compile(`/* tslint:disable */
 import { ApiService, IAdditionalHeaders, IRequestParams } from '../api-service';
-import { tokenCache, TokenCache } from '../token-cache';
 const ReconnectingWebsocket = require('reconnecting-websocket');
 
 export namespace ErcDex {
@@ -329,10 +328,6 @@ export namespace ErcDex {
       protected path = '{{path}}';
     }
     {{/events}}
-  }
-
-  export namespace Utils {
-    export const Tokens: TokenCache = tokenCache;
   }
 }
 `);
