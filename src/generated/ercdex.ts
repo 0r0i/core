@@ -512,9 +512,6 @@ Filled (2), Expired(3), Removed(4)
       quoteAssetAddress: string;
       feeAmount: string;
       feeAssetAddress: string;
-      /**
-       * ignore
-       */
       logs: FillReceiptLog[];
     }
 
@@ -1877,9 +1874,6 @@ export interface FillReceipt {
   quoteAssetAddress: string;
   feeAmount: string;
   feeAssetAddress: string;
-  /**
-   * ignore
-   */
   logs: FillReceiptLog[];
   /**
    * Unique Identifier
