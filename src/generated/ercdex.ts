@@ -187,133 +187,6 @@ Current status of app
       expirationDate: Date;
     }
 
-    export interface Account {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      name: string;
-      city: string;
-      state: string;
-      country: string;
-      address: string;
-      accountType?: string;
-      phoneNumber?: string;
-      referrerAccountId?: number;
-      referralWalletId?: number;
-      isConfirmed: boolean;
-      referrerAccount: Account;
-      referralWallet?: AuthorizedWallet;
-      users: User[];
-      rebateContracts: RebateContract[];
-      apiKeys: ApiKey[];
-      authorizedWallets: AuthorizedWallet[];
-      orders: Order[];
-      transactionClaims: TransactionClaim[];
-    }
-
-    export interface AuthorizedWallet {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      /**
-       * Ethereum Account Address
-       */
-      address: string;
-      accountId: number;
-      userId: number;
-      account: Account;
-      user: User;
-    }
-
-    export interface UserRole {
-    }
-
-    export interface User {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      email: string;
-      firstName: string;
-      lastName: string;
-      accountId: number;
-      account: Account;
-      authorizedWallets: AuthorizedWallet[];
-      roles: UserRole[];
-    }
-
-    export interface RebateContract {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      txHash: string;
-      contractAddress: string;
-      principal: string;
-      partner: string;
-      referrer?: string;
-      accountId: number;
-      account: Account;
-    }
-
-    export interface ApiKey {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      name: string;
-      keyId: string;
-      /**
-       * ignore
-       */
-      secret: string;
-      createdById: number;
-      accountId: number;
-      account: Account;
-    }
-
     /**
      * An order that has been recorded on the ERC dEX Order Book
      */
@@ -418,80 +291,6 @@ Filled (2), Expired(3), Removed(4)
       price: string;
       senderAddress: string;
       system: boolean;
-      account?: Account;
-      fillReceiptLogs: FillReceiptLog[];
-    }
-
-    export interface TransactionClaim {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      txHash: string;
-      accountId: number;
-      account: Account;
-    }
-
-    export interface FillReceiptLog {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      orderId: number;
-      receiptId: number;
-      takerAmount: string;
-      makerAddress: string;
-      isFeeOrder: boolean;
-      order: Order;
-      receipt: FillReceipt;
-    }
-
-    export interface FillReceipt {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      txHash: string;
-      taker: string;
-      /**
-       * Receipt status: success | error | pending
-       */
-      status: string;
-      side: string;
-      takerAmount: string;
-      makerAmount: string;
-      price: string;
-      baseAssetAddress: string;
-      baseSymbol: string;
-      quoteSymbol: string;
-      quoteAssetAddress: string;
-      feeAmount: string;
-      feeAssetAddress: string;
-      logs: FillReceiptLog[];
     }
 
     export interface IOrderCreationRequest {
@@ -662,6 +461,61 @@ Filled (2), Expired(3), Removed(4)
        * Unix timestamp of quote
        */
       timestamp: number;
+    }
+
+    export interface FillReceiptLog {
+      /**
+       * Unique Identifier
+       */
+      id: number;
+      /**
+       * Date of creation
+       */
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
+      orderId: number;
+      receiptId: number;
+      takerAmount: string;
+      makerAddress: string;
+      isFeeOrder: boolean;
+    }
+
+    export interface FillReceipt {
+      /**
+       * Unique Identifier
+       */
+      id: number;
+      /**
+       * Date of creation
+       */
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
+      txHash: string;
+      taker: string;
+      /**
+       * Receipt status: success | error | pending
+       */
+      status: string;
+      side: string;
+      takerAmount: string;
+      makerAmount: string;
+      price: string;
+      baseAssetAddress: string;
+      baseSymbol: string;
+      quoteSymbol: string;
+      quoteAssetAddress: string;
+      feeAmount: string;
+      feeAssetAddress: string;
+      /**
+       * ignore
+       */
+      logs: FillReceiptLog[];
     }
 
     export interface IFillRequest {
@@ -1850,204 +1704,6 @@ export interface Order {
   price: string;
   senderAddress: string;
   system: boolean;
-  account?: Account;
-  fillReceiptLogs: FillReceiptLog[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface Account {
-  name: string;
-  city: string;
-  state: string;
-  country: string;
-  address: string;
-  accountType?: ("developer" | "market-maker" | "other" | "relayer" | "trader");
-  phoneNumber?: string;
-  referrerAccountId?: number;
-  referralWalletId?: number;
-  isConfirmed: boolean;
-  referrerAccount: Account;
-  referralWallet?: AuthorizedWallet;
-  users: User[];
-  rebateContracts: RebateContract[];
-  apiKeys: ApiKey[];
-  authorizedWallets: AuthorizedWallet[];
-  orders: Order[];
-  transactionClaims: TransactionClaim[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface AuthorizedWallet {
-  /**
-   * Ethereum Account Address
-   */
-  address: string;
-  accountId: number;
-  userId: number;
-  account: Account;
-  user: User;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface User {
-  email: string;
-  firstName: string;
-  lastName: string;
-  accountId: number;
-  account: Account;
-  authorizedWallets: AuthorizedWallet[];
-  roles: ("ercdex-admin")[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface RebateContract {
-  txHash: string;
-  contractAddress: string;
-  principal: string;
-  partner: string;
-  referrer?: string;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface ApiKey {
-  name: string;
-  keyId: string;
-  /**
-   * ignore
-   */
-  secret: string;
-  createdById: number;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface TransactionClaim {
-  txHash: string;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface FillReceiptLog {
-  orderId: number;
-  receiptId: number;
-  takerAmount: string;
-  makerAddress: string;
-  isFeeOrder: boolean;
-  order: Order;
-  receipt: FillReceipt;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface FillReceipt {
-  txHash: string;
-  taker: string;
-  /**
-   * Receipt status: success | error | pending
-   */
-  status: ("error" | "pending" | "success");
-  side: ("buy" | "sell");
-  takerAmount: string;
-  makerAmount: string;
-  price: string;
-  baseAssetAddress: string;
-  baseSymbol: string;
-  quoteSymbol: string;
-  quoteAssetAddress: string;
-  feeAmount: string;
-  feeAssetAddress: string;
-  logs: FillReceiptLog[];
   /**
    * Unique Identifier
    */
@@ -2221,6 +1877,9 @@ export interface FillReceipt {
   quoteAssetAddress: string;
   feeAmount: string;
   feeAssetAddress: string;
+  /**
+   * ignore
+   */
   logs: FillReceiptLog[];
   /**
    * Unique Identifier
@@ -2242,258 +1901,6 @@ export interface FillReceiptLog {
   takerAmount: string;
   makerAddress: string;
   isFeeOrder: boolean;
-  order: Order;
-  receipt: FillReceipt;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-/**
- * An order that has been recorded on the ERC dEX Order Book
- */
-export interface Order {
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateClosed?: string;
-  /**
-   * 0x Exchange Contract Address
-   */
-  exchangeAddress: string;
-  /**
-   * Unix timestamp of order expiration (in seconds)
-   */
-  expirationTimeSeconds: string;
-  /**
-   * Address of the fee recipient
-   */
-  feeRecipientAddress: string;
-  /**
-   * Address of the order maker
-   */
-  makerAddress: string;
-  /**
-   * Fee due from maker on order fill
-   */
-  makerFee: string;
-  /**
-   * Token address of the maker token
-   */
-  makerAssetAddress: string;
-  /**
-   * Encoded maker asset data
-   */
-  makerAssetData: string;
-  /**
-   * Encoded taker asset data
-   */
-  takerAssetData: string;
-  /**
-   * Total amount of maker token in order
-   */
-  makerAssetAmount: string;
-  /**
-   * Secure salt
-   */
-  salt: string;
-  /**
-   * Serialized version of the EC signature for signed orders
-   */
-  signature: string;
-  /**
-   * Taker address; generally a null taker
-   */
-  takerAddress: string;
-  /**
-   * Fee due from taker on order fill
-   */
-  takerFee: string;
-  /**
-   * Token address of the taker token
-   */
-  takerAssetAddress: string;
-  /**
-   * Total amount of taker token in order
-   */
-  takerAssetAmount: string;
-  /**
-   * Remaining amount that can be filled in taker tokens
-   */
-  remainingFillableTakerAmount: string;
-  /**
-   * Remaining amount that can be filled in maker tokens
-   */
-  remainingFillableMakerAmount: string;
-  /**
-   * The hash of the signed order
-   */
-  orderHash: string;
-  /**
-   * Account ID of originator
-   */
-  accountId?: number;
-  /**
-   * State of the order: Open (0), Canceled (1),
-   * Filled (2), Expired(3), Removed(4)
-   */
-  state: number;
-  price: string;
-  senderAddress: string;
-  system: boolean;
-  account?: Account;
-  fillReceiptLogs: FillReceiptLog[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface Account {
-  name: string;
-  city: string;
-  state: string;
-  country: string;
-  address: string;
-  accountType?: ("developer" | "market-maker" | "other" | "relayer" | "trader");
-  phoneNumber?: string;
-  referrerAccountId?: number;
-  referralWalletId?: number;
-  isConfirmed: boolean;
-  referrerAccount: Account;
-  referralWallet?: AuthorizedWallet;
-  users: User[];
-  rebateContracts: RebateContract[];
-  apiKeys: ApiKey[];
-  authorizedWallets: AuthorizedWallet[];
-  orders: Order[];
-  transactionClaims: TransactionClaim[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface AuthorizedWallet {
-  /**
-   * Ethereum Account Address
-   */
-  address: string;
-  accountId: number;
-  userId: number;
-  account: Account;
-  user: User;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface User {
-  email: string;
-  firstName: string;
-  lastName: string;
-  accountId: number;
-  account: Account;
-  authorizedWallets: AuthorizedWallet[];
-  roles: ("ercdex-admin")[];
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface RebateContract {
-  txHash: string;
-  contractAddress: string;
-  principal: string;
-  partner: string;
-  referrer?: string;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface ApiKey {
-  name: string;
-  keyId: string;
-  /**
-   * ignore
-   */
-  secret: string;
-  createdById: number;
-  accountId: number;
-  account: Account;
-  /**
-   * Unique Identifier
-   */
-  id: number;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateCreated: Date;
-  /**
-   * Enables basic storage and retrieval of dates and times.
-   */
-  dateUpdated: Date;
-  
-}
-export interface TransactionClaim {
-  txHash: string;
-  accountId: number;
-  account: Account;
   /**
    * Unique Identifier
    */
