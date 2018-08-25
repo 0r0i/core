@@ -53,7 +53,6 @@ export namespace ErcDex {
 
     hasWebSocket = typeof WebSocket !== 'undefined';
     if (!hasWebSocket) {
-      console.warn('No WebSocket found in global namespace; subscriptions will not be configured.');
       return;
     }
 
@@ -512,7 +511,7 @@ Filled (2), Expired(3), Removed(4)
       quoteAssetAddress: string;
       feeAmount: string;
       feeAssetAddress: string;
-      logs: FillReceiptLog[];
+      logs?: FillReceiptLog[];
     }
 
     export interface IFillRequest {
@@ -1874,7 +1873,7 @@ export interface FillReceipt {
   quoteAssetAddress: string;
   feeAmount: string;
   feeAssetAddress: string;
-  logs: FillReceiptLog[];
+  logs?: FillReceiptLog[];
   /**
    * Unique Identifier
    */
