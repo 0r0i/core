@@ -25,7 +25,7 @@
     "test": "mocha -t 15000 -r ts-node/register \"./src/**/*.spec.ts\""
   },
   "dependencies": {
-    "0x.js": "^1.0.1-rc.3",
+    "0x.js": "1.0.1-rc.3",
     "@0xproject/base-contract": "^2.0.0-rc.1",
     "@0xproject/subproviders": "^1.0.5",
     "@0xproject/types": "^1.0.1-rc.4",
