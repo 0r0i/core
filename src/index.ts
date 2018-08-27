@@ -1,4 +1,3 @@
-import { SignerType, ZeroEx } from '0x.js';
 import * as Subproviders from '@0xproject/subproviders';
 import { Web3Wrapper } from '@0xproject/web3-wrapper';
 import { CancelOrder } from './cancel-order';
@@ -13,8 +12,6 @@ export {
   CancelOrder,
   FillOrders,
   SigningUtils,
-  ZeroEx,
   Web3Wrapper,
-  Subproviders,
-  SignerType
+  Subproviders
 };

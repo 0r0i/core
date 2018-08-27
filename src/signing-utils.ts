@@ -1,5 +1,8 @@
-import { SignerType, ZeroEx } from '0x.js';
-import { EIP712Schema, EIP712Types, EIP712Utils } from '@0xproject/order-utils';
+import { SignerType } from '0x.js';
+import {
+  assetDataUtils, EIP712Schema, EIP712Types,
+  eip712Utils, generatePseudoRandomSalt, orderHashUtils, Provider, signatureUtils
+} from '@0xproject/order-utils';
 import { Order } from '@0xproject/types';
 import { BigNumber } from '@0xproject/utils';
 import * as ethUtil from 'ethereumjs-util';
@@ -15,12 +18,12 @@ const EIP712_ZEROEX_TRANSACTION_SCHEMA: EIP712Schema = {
 
 export const SigningUtils = {
   async signMessageAsync(
-    zeroEx: ZeroEx,
+    provider: Provider,
     hexMessage: string,
     address: string,
     signerType: SignerType
   ) {
-    return await zeroEx.ecSignOrderHashAsync(hexMessage, address, signerType);
+    return await signatureUtils.ecSignOrderHashAsync(provider, hexMessage, address, signerType);
   },
   getExecuteTransactionHex(data: string, salt: BigNumber, signerAddress: string, exchangeAddress: string): string {
     const executeTransactionData = {
@@ -28,22 +31,22 @@ export const SigningUtils = {
       signerAddress,
       data,
     };
-    const executeTransactionHashBuff = EIP712Utils.structHash(
+    const executeTransactionHashBuff = eip712Utils.structHash(
       EIP712_ZEROEX_TRANSACTION_SCHEMA,
       executeTransactionData,
     );
-    const eip721MessageBuffer = EIP712Utils.createEIP712Message(executeTransactionHashBuff, exchangeAddress);
+    const eip721MessageBuffer = eip712Utils.createEIP712Message(executeTransactionHashBuff, exchangeAddress);
     return `0x${eip721MessageBuffer.toString('hex')}`;
   },
   async signExecuteTransactionHexAsync(
-    zeroEx: ZeroEx,
+    provider: Provider,
     executeTransactionHex: string,
     signerAddress: string,
     signerType: SignerType
   ): Promise<string> {
     const eip721MessageBuffer = ethUtil.toBuffer(executeTransactionHex);
     const signature = await SigningUtils.signMessageAsync(
-      zeroEx,
+      provider,
       '0x' + eip721MessageBuffer.toString('hex'),
       signerAddress,
       signerType
@@ -51,7 +54,7 @@ export const SigningUtils = {
     return signature;
   },
   async signOrder(params: {
-    zeroEx: ZeroEx,
+    provider: Provider,
     makerAddress: string,
     makerAssetAddress: string,
     takerAssetAddress: string,
@@ -66,15 +69,15 @@ export const SigningUtils = {
     signerType: SignerType
   }) {
     const {
-      zeroEx, makerAddress, makerAssetAddress, takerAssetAddress, senderAddress,
+      makerAddress, makerAssetAddress, takerAssetAddress, senderAddress,
       exchangeAddress, feeRecipientAddress, makerAssetAmount, takerAssetAmount,
-      makerFee, takerFee, expirationTimeSeconds, signerType
+      makerFee, takerFee, expirationTimeSeconds, signerType, provider
     } = params;
 
     const order: Order = {
       makerAddress,
-      makerAssetData: ZeroEx.encodeERC20AssetData(makerAssetAddress),
-      takerAssetData: ZeroEx.encodeERC20AssetData(takerAssetAddress),
+      makerAssetData: assetDataUtils.encodeERC20AssetData(makerAssetAddress),
+      takerAssetData: assetDataUtils.encodeERC20AssetData(takerAssetAddress),
       takerAddress: '0x0000000000000000000000000000000000000000',
       feeRecipientAddress,
       senderAddress,
@@ -82,13 +85,13 @@ export const SigningUtils = {
       expirationTimeSeconds,
       makerFee,
       takerFee,
-      salt: ZeroEx.generatePseudoRandomSalt(),
+      salt: generatePseudoRandomSalt(),
       makerAssetAmount,
       takerAssetAmount
     };
 
-    const orderHash = ZeroEx.getOrderHashHex(order);
-    const signature = await zeroEx.ecSignOrderHashAsync(orderHash, makerAddress, signerType);
+    const orderHash = orderHashUtils.getOrderHashHex(order);
+    const signature = await signatureUtils.ecSignOrderHashAsync(provider, orderHash, makerAddress, signerType);
 
     return {
       order,

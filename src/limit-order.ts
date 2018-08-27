@@ -1,4 +1,4 @@
-import { Order, Provider, SignerType, ZeroEx } from '0x.js';
+import { assetDataUtils, Order, Provider, SignerType } from '0x.js';
 import { BigNumber } from 'bignumber.js';
 import { ErcDex } from './generated/ercdex';
 import { SigningUtils } from './signing-utils';
@@ -99,8 +99,7 @@ export class LimitOrder extends Web3EnabledService<ErcDex.Api.Order> {
         .round();
     }
 
-    const zeroEx = this.zeroEx;
-    const exchangeAddress = await zeroEx.exchange.getContractAddress();
+    const exchangeAddress = await this.exchangeWrapper.getContractAddress();
 
     let orderConfig: ErcDex.Api.IOrderConfig;
     try {
@@ -108,10 +107,10 @@ export class LimitOrder extends Web3EnabledService<ErcDex.Api.Order> {
         exchangeAddress,
         makerAddress: this.params.account,
         makerAssetAmount: makerAssetAmount.toString(),
-        makerAssetData: ZeroEx.encodeERC20AssetData(makerToken.address),
+        makerAssetData: assetDataUtils.encodeERC20AssetData(makerToken.address),
         takerAddress: nullAddress,
         takerAssetAmount: takerAssetAmount.toString(),
-        takerAssetData: ZeroEx.encodeERC20AssetData(takerToken.address)
+        takerAssetData: assetDataUtils.encodeERC20AssetData(takerToken.address)
       });
     } catch (err) {
       console.error('failed to get order config...');
@@ -134,7 +133,7 @@ export class LimitOrder extends Web3EnabledService<ErcDex.Api.Order> {
       : Math.floor(this.params.expirationDate.getTime() / 1000));
 
     const signOrderParams = {
-      zeroEx,
+      provider: this.provider,
       feeRecipientAddress: orderConfig.feeRecipientAddress,
       makerFee: new BigNumber(orderConfig.makerFee),
       takerFee: new BigNumber(orderConfig.takerFee),
@@ -182,17 +181,17 @@ export class LimitOrder extends Web3EnabledService<ErcDex.Api.Order> {
   private async validateRequest(params: IValidateParams) {
     const { makerToken, makerAssetAmount } = params;
 
-    const zeroEx = this.zeroEx;
+    const { erc20Token } = await this.contractWrappers;
 
     await Promise.all([
       (async () => {
-        const makerBalance = await zeroEx.erc20Token.getBalanceAsync(makerToken.address, this.params.account);
+        const makerBalance = await erc20Token.getBalanceAsync(makerToken.address, this.params.account);
         if (makerBalance.lessThan(makerAssetAmount)) {
           throw new Error('insufficient token balance');
         }
       })(),
       (async () => {
-        const makerAllowance = await zeroEx.erc20Token.getProxyAllowanceAsync(makerToken.address, this.params.account);
+        const makerAllowance = await erc20Token.getProxyAllowanceAsync(makerToken.address, this.params.account);
         if (makerAllowance.lessThan(makerAssetAmount)) {
           throw new Error('insufficient allowance');
         }

@@ -39,7 +39,7 @@ export class CancelOrder extends Web3EnabledService<ErcDex.Api.ICancelOrderResul
           {
             orderHash: this.params.orderHash,
             signature: await SigningUtils.signMessageAsync(
-              this.zeroEx,
+              this.provider,
               '0x' + ethUtil.sha3(`cancel:${this.params.orderHash}`).toString('hex'),
               this.params.account,
               this.params.signerType

@@ -1,9 +1,10 @@
-import { Provider, ZeroEx } from '0x.js';
-import { Web3Wrapper } from '@0xproject/web3-wrapper';
+import { ContractWrappers, ExchangeWrapper } from '@0xproject/contract-wrappers';
+import { Provider, Web3Wrapper } from '@0xproject/web3-wrapper';
 
 export abstract class Web3EnabledService<T> {
-  protected zeroEx: ZeroEx;
   protected web3Wrapper: Web3Wrapper;
+  protected contractWrappers: ContractWrappers;
+  protected exchangeWrapper: ExchangeWrapper;
 
   constructor(protected readonly provider: Provider) {
     if (!provider) { throw new Error('no provider provided'); }
@@ -12,9 +13,10 @@ export abstract class Web3EnabledService<T> {
   }
 
   public async execute() {
-    this.zeroEx = new ZeroEx(this.provider, {
-      networkId: await this.web3Wrapper.getNetworkIdAsync()
-    });
+    const networkId = await this.web3Wrapper.getNetworkIdAsync();
+
+    this.contractWrappers = new ContractWrappers(this.web3Wrapper.getProvider(), { networkId });
+    this.exchangeWrapper = new ExchangeWrapper(this.web3Wrapper, networkId);
 
     return await this.run();
   }

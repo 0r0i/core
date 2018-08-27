@@ -8,7 +8,7 @@ import { tokenCache } from '../token-cache';
 import { DEFAULT_TX_OPTIONS, RELAYER_WALLET_ADDRESS } from './utils/constants';
 import { EventSink } from './utils/event-sink';
 import { shouldThrow } from './utils/should-throw';
-import { web3Wrapper, zeroEx as zeroExFn } from './utils/web3-provider';
+import { contractWrappers, web3Wrapper } from './utils/web3-provider';
 
 describe('LimitOrder', () => {
   it('should reject when using unsupported token pair', async () => {
@@ -60,9 +60,9 @@ describe('LimitOrder', () => {
   });
 
   it('should reject when insufficient balance', async () => {
-    const zeroEx = await zeroExFn();
     const zrxToken = await tokenCache.getTokenBySymbol('ZRX');
-    const zrxBalance = await zeroEx.erc20Token.getBalanceAsync(zrxToken.address, RELAYER_WALLET_ADDRESS);
+    const wrappers = await contractWrappers();
+    const zrxBalance = await wrappers.erc20Token.getBalanceAsync(zrxToken.address, RELAYER_WALLET_ADDRESS);
 
     const err: Error = await shouldThrow(() => new LimitOrder({
       account: RELAYER_WALLET_ADDRESS,
@@ -78,11 +78,11 @@ describe('LimitOrder', () => {
   });
 
   it('should reject when insufficient allowance', async () => {
-    const zeroEx = await zeroExFn();
     const tokenPair = await tokenCache.getTokenPair('ZRX', 'WETH');
     const minAmount = new BigNumber(tokenPair.minAmount);
 
-    await zeroEx.erc20Token.setProxyAllowanceAsync(tokenPair.assetDataA.address, RELAYER_WALLET_ADDRESS, new BigNumber(0), DEFAULT_TX_OPTIONS);
+    const { erc20Token } = await contractWrappers();
+    await erc20Token.setProxyAllowanceAsync(tokenPair.assetDataA.address, RELAYER_WALLET_ADDRESS, new BigNumber(0), DEFAULT_TX_OPTIONS);
 
     const err: Error = await shouldThrow(() => new LimitOrder({
       account: RELAYER_WALLET_ADDRESS,
@@ -96,8 +96,8 @@ describe('LimitOrder', () => {
     }).execute());
     expect(err.message).to.equal(`insufficient allowance`);
 
-    const txHash = await zeroEx.erc20Token.setUnlimitedProxyAllowanceAsync(tokenPair.assetDataA.address, RELAYER_WALLET_ADDRESS);
-    await zeroEx.awaitTransactionMinedAsync(txHash);
+    const txHash = await erc20Token.setUnlimitedProxyAllowanceAsync(tokenPair.assetDataA.address, RELAYER_WALLET_ADDRESS);
+    await web3Wrapper().awaitTransactionMinedAsync(txHash);
   });
 
   it('should be able to create a new order', async () => {

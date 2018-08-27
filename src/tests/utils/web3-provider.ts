@@ -1,4 +1,4 @@
-import { ZeroEx } from '0x.js';
+import { ContractWrappers } from '0x.js';
 import { MnemonicWalletSubprovider } from '@0xproject/subproviders';
 import { Web3Wrapper } from '@0xproject/web3-wrapper';
 
@@ -24,11 +24,9 @@ export const web3Wrapper = () => {
   return _web3Wrapper = new Web3Wrapper(engine);
 };
 
-let _zeroEx: ZeroEx;
-export const zeroEx = async () => {
-  if (_zeroEx) { return _zeroEx; }
-  const wrapper = web3Wrapper();
-  const networkId = await wrapper.getNetworkIdAsync();
-
-  return new ZeroEx(web3Wrapper().getProvider(), { networkId });
+export const contractWrappers = async () => {
+  const networkId = await web3Wrapper().getNetworkIdAsync();
+  return new ContractWrappers(web3Wrapper().getProvider(), {
+    networkId
+  });
 };

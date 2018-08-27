@@ -33,7 +33,7 @@ export class FillOrders extends Web3EnabledService<ErcDex.Api.FillReceipt> {
     });
 
     const signature = await SigningUtils.signExecuteTransactionHexAsync(
-      await this.zeroEx,
+      this.provider,
       quote.hex,
       this.params.taker,
       this.params.signerType
