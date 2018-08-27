@@ -186,6 +186,31 @@ Current status of app
       expirationDate: Date;
     }
 
+    export interface Account {
+      /**
+       * Unique Identifier
+       */
+      id: number;
+      /**
+       * Date of creation
+       */
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
+      name: string;
+      city: string;
+      state: string;
+      country: string;
+      address: string;
+      accountType?: string;
+      phoneNumber?: string;
+      referrerAccountId?: number;
+      referralWalletId?: number;
+      isConfirmed: boolean;
+    }
+
     /**
      * An order that has been recorded on the ERC dEX Order Book
      */
@@ -290,6 +315,7 @@ Filled (2), Expired(3), Removed(4)
       price: string;
       senderAddress: string;
       system: boolean;
+      account?: Account;
     }
 
     export interface IOrderCreationRequest {
@@ -1700,6 +1726,32 @@ export interface Order {
   price: string;
   senderAddress: string;
   system: boolean;
+  account?: Account;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface Account {
+  name: string;
+  city: string;
+  state: string;
+  country: string;
+  address: string;
+  accountType?: ("developer" | "market-maker" | "other" | "relayer" | "trader");
+  phoneNumber?: string;
+  referrerAccountId?: number;
+  referralWalletId?: number;
+  isConfirmed: boolean;
   /**
    * Unique Identifier
    */
