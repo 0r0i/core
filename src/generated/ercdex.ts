@@ -132,7 +132,7 @@ export namespace ErcDex {
     export interface IGetAssetPairsResponse {
       total: number;
       page: number;
-      per_page: number;
+      perPage: number;
       records: ITokenPair[];
     }
 
@@ -154,51 +154,6 @@ Current status of app
     export interface IMaintenanceStatus {
       isMaintenance: boolean;
       reason?: string;
-    }
-
-    export interface ISource {
-      domain: string;
-      title: string;
-      region: string;
-      path: string;
-    }
-
-    export interface ICurrency {
-      code: string;
-      title: string;
-      slug: string;
-      url: string;
-    }
-
-    export interface IVotes {
-      negative: number;
-      positive: number;
-      important: number;
-      liked: number;
-      disliked: number;
-      lol: number;
-      toxic: number;
-      saved: number;
-    }
-
-    export interface IResult {
-      domain: string;
-      source: ISource;
-      title: string;
-      published_at: Date;
-      slug: string;
-      currencies: ICurrency[];
-      id: number;
-      created_at: Date;
-      url: string;
-      votes: IVotes;
-    }
-
-    export interface ICryptoPanicPostsResponse {
-      count: number;
-      next: string;
-      previous?: any;
-      results: IResult[];
     }
 
     /**
@@ -424,13 +379,12 @@ Filled (2), Expired(3), Removed(4)
 
     export interface IOrderData {
       order: Order;
-      remainingFillableAmount: string;
     }
 
     export interface IGetOrdersResponse {
       total: number;
       page: number;
-      per_page: number;
+      perPage: number;
       records: IOrderData[];
     }
 
@@ -441,10 +395,17 @@ Filled (2), Expired(3), Removed(4)
       takerFee: string;
     }
 
+    export interface IFeeRecipientsResponse {
+      total: number;
+      page: number;
+      perPage: number;
+      records: any[];
+    }
+
     export interface IOrderbookSide {
       total: number;
       page: number;
-      per_page: number;
+      perPage: number;
       records: IOrderData[];
     }
 
@@ -788,7 +749,7 @@ Filled (2), Expired(3), Removed(4)
     export interface IGetReceiptsResponse {
       total: number;
       page: number;
-      per_page: number;
+      perPage: number;
       records: FillReceipt[];
     }
 
@@ -941,7 +902,7 @@ Filled (2), Expired(3), Removed(4)
 
     export interface IAssetPairsGetParams {
       page?: number;
-      per_page?: number;
+      perPage?: number;
     }
 
     export interface INewsGetCryptoPanicParams {
@@ -968,7 +929,7 @@ Filled (2), Expired(3), Removed(4)
       /**
        * Page size
        */
-      per_page?: number;
+      perPage?: number;
       /**
        * 0x contract exchange address
        */
@@ -1013,14 +974,8 @@ Filled (2), Expired(3), Removed(4)
        * Address of order maker
        */
       makerAddress?: string;
-      /**
-       * Maker asset type (only ERC20 supported)
-       */
-      makerAssetType?: string;
-      /**
-       * Taker asset type (only ERC20 supported)
-       */
-      takerAssetType?: string;
+      makerAssetProxyId?: string;
+      takerAssetProxyId?: string;
       pair?: string;
     }
 
@@ -1044,7 +999,7 @@ Filled (2), Expired(3), Removed(4)
     export interface IOrdersGetOrderbookParams {
       baseAssetData: string;
       quoteAssetData: string;
-      per_page?: number;
+      perPage?: number;
       page?: number;
     }
 
@@ -1087,7 +1042,7 @@ Filled (2), Expired(3), Removed(4)
       /**
        * Page size
        */
-      per_page?: number;
+      perPage?: number;
       /**
        * Optionally provide wallet address of receipt recipient
        */
@@ -1233,7 +1188,7 @@ Filled (2), Expired(3), Removed(4)
 
         requestParams.queryParameters = {
           page: params.page,
-          per_page: params.per_page,
+          perPage: params.perPage,
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IGetAssetPairsResponse>(requestParams, headers);
@@ -1280,7 +1235,7 @@ Filled (2), Expired(3), Removed(4)
     }
     export interface INewsService {
 
-      getCryptoPanic(params: INewsGetCryptoPanicParams, headers?: IAdditionalHeaders): Promise<ICryptoPanicPostsResponse>;
+      getCryptoPanic(params: INewsGetCryptoPanicParams, headers?: IAdditionalHeaders): Promise<any>;
     }
 
     export class NewsService extends ApiService implements INewsService {
@@ -1291,7 +1246,7 @@ Filled (2), Expired(3), Removed(4)
           url: `${baseApiUrl}/api/v1/news/cryptopanic/${params.symbol}`
         };
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<ICryptoPanicPostsResponse>(requestParams, headers);
+        return this.executeRequest<any>(requestParams, headers);
       }
     }
     export interface INotificationsService {
@@ -1339,6 +1294,8 @@ Filled (2), Expired(3), Removed(4)
 
       getOrderConfig(params: IOrdersGetOrderConfigParams, headers?: IAdditionalHeaders): Promise<IOrderConfig>;
 
+      getFeeRecipients(headers?: IAdditionalHeaders): Promise<IFeeRecipientsResponse>;
+
       getOrderbook(params: IOrdersGetOrderbookParams, headers?: IAdditionalHeaders): Promise<IOrderbookResponse>;
 
       /**
@@ -1375,7 +1332,7 @@ Filled (2), Expired(3), Removed(4)
         requestParams.queryParameters = {
           open: params.open,
           page: params.page,
-          per_page: params.per_page,
+          perPage: params.perPage,
           exchangeAddress: params.exchangeAddress,
           feeRecipientAddress: params.feeRecipientAddress,
           takerAssetData: params.takerAssetData,
@@ -1387,8 +1344,8 @@ Filled (2), Expired(3), Removed(4)
           takerAddress: params.takerAddress,
           makerAssetAddress: params.makerAssetAddress,
           makerAddress: params.makerAddress,
-          makerAssetType: params.makerAssetType,
-          takerAssetType: params.takerAssetType,
+          makerAssetProxyId: params.makerAssetProxyId,
+          takerAssetProxyId: params.takerAssetProxyId,
           pair: params.pair,
         };
         requestParams.apiKeyId = apiKeyId;
@@ -1426,6 +1383,15 @@ Filled (2), Expired(3), Removed(4)
         return this.executeRequest<IOrderConfig>(requestParams, headers);
       }
 
+      public async getFeeRecipients(headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'GET',
+          url: `${baseApiUrl}/api/v1/fee_recipients`
+        };
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<IFeeRecipientsResponse>(requestParams, headers);
+      }
+
       public async getOrderbook(params: IOrdersGetOrderbookParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
@@ -1435,7 +1401,7 @@ Filled (2), Expired(3), Removed(4)
         requestParams.queryParameters = {
           baseAssetData: params.baseAssetData,
           quoteAssetData: params.quoteAssetData,
-          per_page: params.per_page,
+          perPage: params.perPage,
           page: params.page,
         };
         requestParams.apiKeyId = apiKeyId;
@@ -1600,7 +1566,7 @@ Filled (2), Expired(3), Removed(4)
 
         requestParams.queryParameters = {
           page: params.page,
-          per_page: params.per_page,
+          perPage: params.perPage,
           taker_address: params.taker_address,
           pair: params.pair,
         };
