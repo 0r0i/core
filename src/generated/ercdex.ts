@@ -156,6 +156,51 @@ Current status of app
       reason?: string;
     }
 
+    export interface ISource {
+      domain: string;
+      title: string;
+      region: string;
+      path: string;
+    }
+
+    export interface ICurrency {
+      code: string;
+      title: string;
+      slug: string;
+      url: string;
+    }
+
+    export interface IVotes {
+      negative: number;
+      positive: number;
+      important: number;
+      liked: number;
+      disliked: number;
+      lol: number;
+      toxic: number;
+      saved: number;
+    }
+
+    export interface IResult {
+      domain: string;
+      source: ISource;
+      title: string;
+      published_at: Date;
+      slug: string;
+      currencies: ICurrency[];
+      id: number;
+      created_at: Date;
+      url: string;
+      votes: IVotes;
+    }
+
+    export interface ICryptoPanicPostsResponse {
+      count: number;
+      next: string;
+      previous?: any;
+      results: IResult[];
+    }
+
     /**
      * A notification meant for consumption by clients
      */
@@ -1235,7 +1280,7 @@ Filled (2), Expired(3), Removed(4)
     }
     export interface INewsService {
 
-      getCryptoPanic(params: INewsGetCryptoPanicParams, headers?: IAdditionalHeaders): Promise<any>;
+      getCryptoPanic(params: INewsGetCryptoPanicParams, headers?: IAdditionalHeaders): Promise<ICryptoPanicPostsResponse>;
     }
 
     export class NewsService extends ApiService implements INewsService {
@@ -1246,7 +1291,7 @@ Filled (2), Expired(3), Removed(4)
           url: `${baseApiUrl}/api/v1/news/cryptopanic/${params.symbol}`
         };
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<any>(requestParams, headers);
+        return this.executeRequest<ICryptoPanicPostsResponse>(requestParams, headers);
       }
     }
     export interface INotificationsService {
