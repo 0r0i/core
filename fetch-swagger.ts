@@ -26,7 +26,7 @@ const getSwaggerJson = () => {
 
   const info = spec.info as Swagger.Info & { 'x-logo': { url: string; }};
 
-  spec.host = 'api.ercdex.com';
+  spec.host = 'app.ercdex.com';
   spec.schemes = ['https'];
 
   info['x-logo'] = {

@@ -40,7 +40,7 @@ export namespace ErcDex {
    */
   export const Initialize = (params?: { host?: string; apiKeyId?: string; }) => {
     const hasProcess = typeof process !== 'undefined' && process.env;
-    const host = (params && params.host) || (hasProcess && process.env.AQUEDUCT_HOST) || 'api.ercdex.com';
+    const host = (params && params.host) || (hasProcess && process.env.AQUEDUCT_HOST) || 'app.ercdex.com';
     baseApiUrl = `https://${host}`;
 
     if (params) {
