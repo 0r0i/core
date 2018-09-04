@@ -201,6 +201,33 @@ Current status of app
       results: IResult[];
     }
 
+    export interface NewsItem {
+      /**
+       * Unique Identifier
+       */
+      id: number;
+      /**
+       * Date of creation
+       */
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
+      url: string;
+      title: string;
+      description: string;
+      featured: boolean;
+      source: string;
+    }
+
+    export interface IGetNewsItemsResponse {
+      total: number;
+      page: number;
+      perPage: number;
+      records: NewsItem[];
+    }
+
     /**
      * A notification meant for consumption by clients
      */
@@ -537,6 +564,12 @@ Filled (2), Expired(3), Removed(4)
        * Unix timestamp of quote
        */
       timestamp: number;
+    }
+
+    export interface ITokenRequestRequest {
+      symbol: string;
+      email?: string;
+      message?: string;
     }
 
     export interface FillReceiptLog {
@@ -954,6 +987,11 @@ Filled (2), Expired(3), Removed(4)
       symbol: string;
     }
 
+    export interface INewsGetErcDexParams {
+      page?: number;
+      perPage?: number;
+    }
+
     export interface INotificationsGetParams {
       account: string;
     }
@@ -1019,7 +1057,13 @@ Filled (2), Expired(3), Removed(4)
        * Address of order maker
        */
       makerAddress?: string;
+      /**
+       * Maker asset proxy ID (ERC20 proxy only
+       */
       makerAssetProxyId?: string;
+      /**
+       * Taker asset proxy ID (ERC20 proxy only)
+       */
       takerAssetProxyId?: string;
       pair?: string;
     }
@@ -1057,6 +1101,10 @@ Filled (2), Expired(3), Removed(4)
        * Granularity of results: 24h (1 day), 1w (1 week), 1mo (1 month)
        */
       granularity?: string;
+    }
+
+    export interface ITokenRequestCreateParams {
+      request: ITokenRequestRequest;
     }
 
     export interface ITradeFillParams {
@@ -1281,6 +1329,8 @@ Filled (2), Expired(3), Removed(4)
     export interface INewsService {
 
       getCryptoPanic(params: INewsGetCryptoPanicParams, headers?: IAdditionalHeaders): Promise<ICryptoPanicPostsResponse>;
+
+      getErcDex(params: INewsGetErcDexParams, headers?: IAdditionalHeaders): Promise<IGetNewsItemsResponse>;
     }
 
     export class NewsService extends ApiService implements INewsService {
@@ -1292,6 +1342,20 @@ Filled (2), Expired(3), Removed(4)
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<ICryptoPanicPostsResponse>(requestParams, headers);
+      }
+
+      public async getErcDex(params: INewsGetErcDexParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'GET',
+          url: `${baseApiUrl}/api/v1/news/ercdex`
+        };
+
+        requestParams.queryParameters = {
+          page: params.page,
+          perPage: params.perPage,
+        };
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<IGetNewsItemsResponse>(requestParams, headers);
       }
     }
     export interface INotificationsService {
@@ -1501,6 +1565,24 @@ Filled (2), Expired(3), Removed(4)
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IGlobalTickerRecord[]>(requestParams, headers);
+      }
+    }
+    export interface ITokenRequestService {
+
+      create(params: ITokenRequestCreateParams, headers?: IAdditionalHeaders): Promise<void>;
+    }
+
+    export class TokenRequestService extends ApiService implements ITokenRequestService {
+
+      public async create(params: ITokenRequestCreateParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'POST',
+          url: `${baseApiUrl}/api/v1/token_requests`
+        };
+
+        requestParams.body = params.request;
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<void>(requestParams, headers);
       }
     }
     export interface ITradeService {
