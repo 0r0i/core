@@ -1298,6 +1298,11 @@ Filled (2), Expired(3), Removed(4)
        * Determine if app is in maintenance mode
        */
       isMaintenance(headers?: IAdditionalHeaders): Promise<IMaintenanceStatus>;
+
+      /**
+       * Get contract address for bulk token utility contract
+       */
+      getBulkTokenContract(headers?: IAdditionalHeaders): Promise<string>;
     }
 
     export class NetworksService extends ApiService implements INetworksService {
@@ -1324,6 +1329,18 @@ Filled (2), Expired(3), Removed(4)
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IMaintenanceStatus>(requestParams, headers);
+      }
+
+      /**
+       * Get contract address for bulk token utility contract
+       */
+      public async getBulkTokenContract(headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'GET',
+          url: `${baseApiUrl}/api/v1/networks/bulk_token_contract`
+        };
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<string>(requestParams, headers);
       }
     }
     export interface INewsService {
