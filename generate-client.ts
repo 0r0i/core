@@ -129,7 +129,7 @@ export namespace ErcDex {
       return;
     }
 
-    socket = new ReconnectingWebsocket(\`wss:\${host}\`, undefined);
+    socket = new ReconnectingWebsocket(\`wss:\${host}\` + '/ws', undefined);
 
     socket.onopen = () => {
       Object.keys(subscriptions).map(k => subscriptions[k]).forEach(s => {
