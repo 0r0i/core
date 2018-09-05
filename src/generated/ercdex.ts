@@ -572,26 +572,6 @@ Filled (2), Expired(3), Removed(4)
       message?: string;
     }
 
-    export interface FillReceiptLog {
-      /**
-       * Unique Identifier
-       */
-      id: number;
-      /**
-       * Date of creation
-       */
-      dateCreated: Date;
-      /**
-       * Date of updated
-       */
-      dateUpdated: Date;
-      orderId: number;
-      receiptId: number;
-      takerAmount: string;
-      makerAddress: string;
-      isFeeOrder: boolean;
-    }
-
     export interface FillReceipt {
       /**
        * Unique Identifier
@@ -624,6 +604,27 @@ Filled (2), Expired(3), Removed(4)
       logs?: FillReceiptLog[];
     }
 
+    export interface FillReceiptLog {
+      /**
+       * Unique Identifier
+       */
+      id: number;
+      /**
+       * Date of creation
+       */
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
+      orderId: number;
+      receiptId: number;
+      takerAmount: string;
+      makerAddress: string;
+      isFeeOrder: boolean;
+      receipt?: FillReceipt;
+    }
+
     export interface IFillRequest {
       /**
        * ID of a provided quote
@@ -635,7 +636,27 @@ Filled (2), Expired(3), Removed(4)
       signature: string;
     }
 
-    export interface IExtendedOrderFill {
+    export interface MarketQuoteFill {
+      /**
+       * Unique Identifier
+       */
+      id: number;
+      /**
+       * Date of creation
+       */
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
+      /**
+       * Computed hash verifying the authenticity of the order
+       */
+      orderId: number;
+      /**
+       * Computed hash verifying the authenticity of the order
+       */
+      quoteId: number;
       /**
        * Computed hash verifying the authenticity of the order
        */
@@ -644,37 +665,21 @@ Filled (2), Expired(3), Removed(4)
        * Taker amount in base units to fill from this order
        */
       takerAmount: string;
-      order: Order;
     }
 
-    export interface IFeeData {
+    export interface MarketQuote {
       /**
-       * ID of order used to pay the fee
-       */
-      orderId: number;
-      /**
-       * Symbol of the token used to pay fees
-       */
-      tokenSymbol: string;
-      /**
-       * Base amount of fees paid
-       */
-      amount: string;
-      /**
-       * Base amount of fees paid to cover network fees
-       */
-      networkAmount: string;
-    }
-
-    export interface IFillQuote {
-      /**
-       * Unique quote identifier
+       * Unique Identifier
        */
       id: number;
       /**
-       * Collection of fills
+       * Date of creation
        */
-      fills: IExtendedOrderFill[];
+      dateCreated: Date;
+      /**
+       * Date of updated
+       */
+      dateUpdated: Date;
       /**
        * Unique salt
        */
@@ -686,15 +691,7 @@ Filled (2), Expired(3), Removed(4)
       /**
        * Order taker
        */
-      taker: string;
-      /**
-       * Contains information regarding any applicable fees
-       */
-      feeData?: IFeeData;
-      /**
-       * Trade token pair
-       */
-      tokenPair: ITokenPair;
+      takerAddress: string;
       /**
        * Computed average price
        */
@@ -711,6 +708,38 @@ Filled (2), Expired(3), Removed(4)
        * Address of taker token
        */
       takerAssetAddress: string;
+      /**
+       * Expiration - unix timestamp in seconds
+       */
+      expiration: number;
+      /**
+       * Symbol of the token used to pay fees
+       */
+      feeTokenSymbol: string;
+      /**
+       * Amount of fees paid in wei
+       */
+      feeAmount: string;
+      /**
+       * Amount of fees paid to cover network fees in wei
+       */
+      networkFeeAmount: string;
+      /**
+       * State of the quote (Open [0], Expired [1], Invalid [2], Redeemed [3])
+       */
+      state: number;
+      /**
+       * ID of order used to pay fees
+       */
+      feeOrderId?: number;
+      /**
+       * Order used to pay fees
+       */
+      feeOrder?: Order;
+      /**
+       * Collection of fills
+       */
+      fills: MarketQuoteFill[];
     }
 
     export interface IOrderFill {
@@ -736,50 +765,7 @@ Filled (2), Expired(3), Removed(4)
     }
 
     export interface IMarketOrderQuote {
-      /**
-       * Unique quote identifier
-       */
-      id: number;
-      /**
-       * Collection of fills
-       */
-      fills: IExtendedOrderFill[];
-      /**
-       * Unique salt
-       */
-      salt: string;
-      /**
-       * Pre-calculated hex to sign
-       */
-      hex: string;
-      /**
-       * Order taker
-       */
-      taker: string;
-      /**
-       * Contains information regarding any applicable fees
-       */
-      feeData?: IFeeData;
-      /**
-       * Trade token pair
-       */
-      tokenPair: ITokenPair;
-      /**
-       * Computed average price
-       */
-      price: string;
-      /**
-       * Total taker amount
-       */
-      takerAmount: string;
-      /**
-       * Total maker amount
-       */
-      makerAmount: string;
-      /**
-       * Address of taker token
-       */
-      takerAssetAddress: string;
+      quote: MarketQuote;
       /**
        * Can only provide a partial quote
        */
@@ -1612,7 +1598,7 @@ Filled (2), Expired(3), Removed(4)
       /**
        * Request to fill an order; returns a quote payload that can be signed and redeemed to begin execution
        */
-      requestFill(params: ITradeRequestFillParams, headers?: IAdditionalHeaders): Promise<IFillQuote>;
+      requestFill(params: ITradeRequestFillParams, headers?: IAdditionalHeaders): Promise<MarketQuote>;
 
       /**
        * Get a quote for a requested quantity
@@ -1659,7 +1645,7 @@ Filled (2), Expired(3), Removed(4)
 
         requestParams.body = params.request;
         requestParams.apiKeyId = apiKeyId;
-        return this.executeRequest<IFillQuote>(requestParams, headers);
+        return this.executeRequest<MarketQuote>(requestParams, headers);
       }
 
       /**
@@ -2121,6 +2107,7 @@ export interface FillReceiptLog {
   takerAmount: string;
   makerAddress: string;
   isFeeOrder: boolean;
+  receipt?: FillReceipt;
   /**
    * Unique Identifier
    */
@@ -2144,6 +2131,261 @@ export interface FillReceiptLog {
 export interface IPairReceiptChangeParams {
   baseSymbol: string;
   quoteSymbol: string;
+  
+}
+/**
+* This file was automatically generated by json-schema-to-typescript.
+* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
+* and run json-schema-to-typescript to regenerate this file.
+*/
+
+export interface IQuotesEventParams {
+  takerAddress: string;
+  
+}
+/**
+* This file was automatically generated by json-schema-to-typescript.
+* DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
+* and run json-schema-to-typescript to regenerate this file.
+*/
+
+export interface IQuotesEventData {
+  quote: MarketQuote;
+  eventType: ("expired" | "invalid");
+  
+}
+export interface MarketQuote {
+  /**
+   * Unique salt
+   */
+  salt: string;
+  /**
+   * Pre-calculated hex to sign
+   */
+  hex: string;
+  /**
+   * Order taker
+   */
+  takerAddress: string;
+  /**
+   * Computed average price
+   */
+  price: string;
+  /**
+   * Total taker amount
+   */
+  takerAmount: string;
+  /**
+   * Total maker amount
+   */
+  makerAmount: string;
+  /**
+   * Address of taker token
+   */
+  takerAssetAddress: string;
+  /**
+   * Expiration - unix timestamp in seconds
+   */
+  expiration: number;
+  /**
+   * Symbol of the token used to pay fees
+   */
+  feeTokenSymbol: string;
+  /**
+   * Amount of fees paid in wei
+   */
+  feeAmount: string;
+  /**
+   * Amount of fees paid to cover network fees in wei
+   */
+  networkFeeAmount: string;
+  /**
+   * State of the quote (Open [0], Expired [1], Invalid [2], Redeemed [3])
+   */
+  state: number;
+  /**
+   * ID of order used to pay fees
+   */
+  feeOrderId?: number;
+  /**
+   * Order used to pay fees
+   */
+  feeOrder?: {
+      /**
+     * Enables basic storage and retrieval of dates and times.
+     */
+  dateClosed?: string;
+      /**
+     * 0x Exchange Contract Address
+     */
+  exchangeAddress: string;
+      /**
+     * Unix timestamp of order expiration (in seconds)
+     */
+  expirationTimeSeconds: string;
+      /**
+     * Address of the fee recipient
+     */
+  feeRecipientAddress: string;
+      /**
+     * Address of the order maker
+     */
+  makerAddress: string;
+      /**
+     * Fee due from maker on order fill
+     */
+  makerFee: string;
+      /**
+     * Token address of the maker token
+     */
+  makerAssetAddress: string;
+      /**
+     * Encoded maker asset data
+     */
+  makerAssetData: string;
+      /**
+     * Encoded taker asset data
+     */
+  takerAssetData: string;
+      /**
+     * Total amount of maker token in order
+     */
+  makerAssetAmount: string;
+      /**
+     * Secure salt
+     */
+  salt: string;
+      /**
+     * Serialized version of the EC signature for signed orders
+     */
+  signature: string;
+      /**
+     * Taker address; generally a null taker
+     */
+  takerAddress: string;
+      /**
+     * Fee due from taker on order fill
+     */
+  takerFee: string;
+      /**
+     * Token address of the taker token
+     */
+  takerAssetAddress: string;
+      /**
+     * Total amount of taker token in order
+     */
+  takerAssetAmount: string;
+      /**
+     * Remaining amount that can be filled in taker tokens
+     */
+  remainingFillableTakerAmount: string;
+      /**
+     * Remaining amount that can be filled in maker tokens
+     */
+  remainingFillableMakerAmount: string;
+      /**
+     * The hash of the signed order
+     */
+  orderHash: string;
+      /**
+     * Account ID of originator
+     */
+  accountId?: number;
+      /**
+     * State of the order: Open (0), Canceled (1),
+     * Filled (2), Expired(3), Removed(4)
+     */
+  state: number;
+    price: string;
+    senderAddress: string;
+    system: boolean;
+    account?: Account;
+      /**
+     * Unique Identifier
+     */
+  id: number;
+      /**
+     * Enables basic storage and retrieval of dates and times.
+     */
+  dateCreated: Date;
+      /**
+     * Enables basic storage and retrieval of dates and times.
+     */
+  dateUpdated: Date;
+    
+  };
+  /**
+   * Collection of fills
+   */
+  fills: MarketQuoteFill[];
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface Account {
+  name: string;
+  city: string;
+  state: string;
+  country: string;
+  address: string;
+  accountType?: ("developer" | "market-maker" | "other" | "relayer" | "trader");
+  phoneNumber?: string;
+  referrerAccountId?: number;
+  referralWalletId?: number;
+  isConfirmed: boolean;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
+  
+}
+export interface MarketQuoteFill {
+  /**
+   * Computed hash verifying the authenticity of the order
+   */
+  orderId: number;
+  /**
+   * Computed hash verifying the authenticity of the order
+   */
+  quoteId: number;
+  /**
+   * Computed hash verifying the authenticity of the order
+   */
+  orderHash: string;
+  /**
+   * Taker amount in base units to fill from this order
+   */
+  takerAmount: string;
+  /**
+   * Unique Identifier
+   */
+  id: number;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateCreated: Date;
+  /**
+   * Enables basic storage and retrieval of dates and times.
+   */
+  dateUpdated: Date;
   
 }
 
@@ -2271,6 +2513,14 @@ export interface IPairReceiptChangeParams {
      */
     export class PairFillReceiptChange extends SocketEvent<IPairReceiptChangeParams, IFillReceiptChangeData> implements IPairFillReceiptChange {
       protected path = 'pair-fill-receipt-change/:baseSymbol/:quoteSymbol';
+    }
+    export interface IQuotes extends ISocketEvent<IQuotesEventParams, IQuotesEventData> {};
+
+    /**
+     * Changes to issued quotes
+     */
+    export class Quotes extends SocketEvent<IQuotesEventParams, IQuotesEventData> implements IQuotes {
+      protected path = 'quotes/:takerAddress';
     }
   }
 }

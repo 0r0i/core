@@ -526,7 +526,6 @@ const getTemplateView = (swagger: Swagger.ISpec, eventSchema: IEventsSchema): IT
 
       const properties = definition.properties;
       if (!properties) {
-        console.log(definition);
         throw new Error('No definition properties found.');
       }
 
