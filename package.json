@@ -26,8 +26,6 @@
   },
   "dependencies": {
     "0x.js": "^1.0.1",
-    "@0xproject/base-contract": "^2.0.2",
-    "@0xproject/contract-wrappers": "^1.0.1",
     "@0xproject/subproviders": "^2.0.2",
     "@0xproject/types": "^1.0.1",
     "@0xproject/typescript-typings": "^2.0.0",
