@@ -16,7 +16,8 @@ export abstract class Web3EnabledService<T> {
     const networkId = await this.web3Wrapper.getNetworkIdAsync();
 
     this.contractWrappers = new ContractWrappers(this.web3Wrapper.getProvider(), { networkId });
-    this.exchangeWrapper = new ExchangeWrapper(this.web3Wrapper, networkId);
+    this.exchangeWrapper = new ExchangeWrapper(this.web3Wrapper, networkId,
+      this.contractWrappers.erc20Token, this.contractWrappers.erc721Token);
 
     return await this.run();
   }
