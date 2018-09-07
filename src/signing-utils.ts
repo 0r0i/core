@@ -1,20 +1,9 @@
 import { SignerType } from '0x.js';
 import {
-  assetDataUtils, EIP712Schema, EIP712Types,
-  eip712Utils, generatePseudoRandomSalt, orderHashUtils, Provider, signatureUtils
+  assetDataUtils, generatePseudoRandomSalt, orderHashUtils, Provider, signatureUtils
 } from '@0xproject/order-utils';
 import { Order } from '@0xproject/types';
 import { BigNumber } from '@0xproject/utils';
-import * as ethUtil from 'ethereumjs-util';
-
-const EIP712_ZEROEX_TRANSACTION_SCHEMA: EIP712Schema = {
-  name: 'ZeroExTransaction',
-  parameters: [
-    { name: 'salt', type: EIP712Types.Uint256 },
-    { name: 'signerAddress', type: EIP712Types.Address },
-    { name: 'data', type: EIP712Types.Bytes },
-  ],
-};
 
 export const SigningUtils = {
   async signMessageAsync(
@@ -25,33 +14,18 @@ export const SigningUtils = {
   ) {
     return await signatureUtils.ecSignOrderHashAsync(provider, hexMessage, address, signerType);
   },
-  getExecuteTransactionHex(data: string, salt: BigNumber, signerAddress: string, exchangeAddress: string): string {
-    const executeTransactionData = {
-      salt,
-      signerAddress,
-      data,
-    };
-    const executeTransactionHashBuff = eip712Utils.structHash(
-      EIP712_ZEROEX_TRANSACTION_SCHEMA,
-      executeTransactionData,
-    );
-    const eip721MessageBuffer = eip712Utils.createEIP712Message(executeTransactionHashBuff, exchangeAddress);
-    return `0x${eip721MessageBuffer.toString('hex')}`;
-  },
-  async signExecuteTransactionHexAsync(
+  async signExecuteTx(
     provider: Provider,
     executeTransactionHex: string,
     signerAddress: string,
     signerType: SignerType
   ): Promise<string> {
-    const eip721MessageBuffer = ethUtil.toBuffer(executeTransactionHex);
-    const signature = await SigningUtils.signMessageAsync(
+    return await signatureUtils.ecSignOrderHashAsync(
       provider,
-      '0x' + eip721MessageBuffer.toString('hex'),
+      executeTransactionHex,
       signerAddress,
       signerType
     );
-    return signature;
   },
   async signOrder(params: {
     provider: Provider,

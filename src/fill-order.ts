@@ -32,20 +32,18 @@ export class FillOrders extends Web3EnabledService<ErcDex.Api.FillReceipt> {
       }
     });
 
-    const signature = await SigningUtils.signExecuteTransactionHexAsync(
+    const signature = await SigningUtils.signExecuteTx(
       this.provider,
       quote.hex,
       this.params.taker,
       this.params.signerType
     );
 
-    const receipt = await new ErcDex.Api.TradeService().fill({
+    return await new ErcDex.Api.TradeService().fill({
       request: {
         quoteId: quote.id,
         signature
       }
     });
-
-    return receipt;
   }
 }
