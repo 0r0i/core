@@ -33,7 +33,7 @@ export class TokenCache {
     }
 
     const promise = this.tokenPairsPromise = (async () => {
-      const result = await new ErcDex.Api.AssetPairsService().get({});
+      const result = await new ErcDex.Api.AssetPairsService().get({ perPage: 200 });
       return result.records;
     })();
     return await promise;
