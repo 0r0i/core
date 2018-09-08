@@ -1,15 +1,17 @@
+import * as Subproviders from '@0xproject/subproviders';
+import { Web3Wrapper } from '@0xproject/web3-wrapper';
 import { CancelOrder } from './cancel-order';
-import { FillOrder } from './fill-order';
-import { Aqueduct } from './generated/aqueduct';
+import { FillOrders } from './fill-order';
+import { ErcDex } from './generated/ercdex';
 import { LimitOrder } from './limit-order';
-import { MarketOrder } from './market-order';
-import { SoftCancelOrder } from './soft-cancel-order';
+import { SigningUtils } from './signing-utils';
 
 export {
-  Aqueduct,
+  ErcDex,
   LimitOrder,
   CancelOrder,
-  FillOrder,
-  MarketOrder,
-  SoftCancelOrder
+  FillOrders,
+  SigningUtils,
+  Web3Wrapper,
+  Subproviders
 };

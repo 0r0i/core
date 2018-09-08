@@ -44,8 +44,11 @@ export abstract class ApiService {
 
       req.end((error: any, response: any) => {
         if (error || !response.ok) {
-          if (response && response.body && response.body.error) {
-            reject(response.body.error);
+          if (response && response.body) {
+            const customError: any = new Error(response.body.message);
+            customError.status = response.body.status;
+            customError.type = response.body.type;
+            reject(customError);
             return;
           }
 

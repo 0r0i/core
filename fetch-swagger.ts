@@ -26,7 +26,7 @@ const getSwaggerJson = () => {
 
   const info = spec.info as Swagger.Info & { 'x-logo': { url: string; }};
 
-  spec.host = 'api.ercdex.com';
+  spec.host = 'app.ercdex.com';
   spec.schemes = ['https'];
 
   info['x-logo'] = {
@@ -38,5 +38,4 @@ const getSwaggerJson = () => {
   };
 
   fs.writeFileSync('./swagger.json', JSON.stringify(spec));
-  fs.writeFileSync('./docs/src/swagger.json', JSON.stringify(spec));
 })();

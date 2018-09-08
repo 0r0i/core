@@ -73,12 +73,9 @@ if (!baseApiUrl) {
 
 const template = (eventModelContent: string) => handlebars.compile(`/* tslint:disable */
 import { ApiService, IAdditionalHeaders, IRequestParams } from '../api-service';
-import { BigNumber } from 'bignumber.js';
-import { tokenCache, TokenCache } from '../token-cache';
-import { ZeroEx } from '0x.js';
 const ReconnectingWebsocket = require('reconnecting-websocket');
 
-export namespace Aqueduct {
+export namespace ErcDex {
   export let socket: WebSocket;
   let baseApiUrl: string;
   let apiKeyId: string | undefined;
@@ -116,7 +113,7 @@ export namespace Aqueduct {
    */
   export const Initialize = (params?: { host?: string; apiKeyId?: string; }) => {
     const hasProcess = typeof process !== 'undefined' && process.env;
-    const host = (params && params.host) || (hasProcess && process.env.AQUEDUCT_HOST) || 'api.ercdex.com';
+    const host = (params && params.host) || (hasProcess && process.env.AQUEDUCT_HOST) || 'app.ercdex.com';
     baseApiUrl = \`https://\${host}\`;
 
     if (params) {
@@ -129,11 +126,10 @@ export namespace Aqueduct {
 
     hasWebSocket = typeof WebSocket !== 'undefined';
     if (!hasWebSocket) {
-      console.warn('No WebSocket found in global namespace; subscriptions will not be configured.');
       return;
     }
 
-    socket = new ReconnectingWebsocket(\`wss:\${host}\`, undefined);
+    socket = new ReconnectingWebsocket(\`wss:\${host}\` + '/ws', undefined);
 
     socket.onopen = () => {
       Object.keys(subscriptions).map(k => subscriptions[k]).forEach(s => {
@@ -332,116 +328,6 @@ export namespace Aqueduct {
     }
     {{/events}}
   }
-
-  export namespace Utils {
-    export interface ISignOrderParams {
-      maker: string;
-      taker: string;
-      makerFee: BigNumber;
-      takerFee: BigNumber;
-      makerTokenAmount: BigNumber;
-      makerTokenAddress: string;
-      takerTokenAmount: BigNumber;
-      takerTokenAddress: string;
-      exchangeContractAddress: string;
-      feeRecipient: string;
-      expirationUnixTimestampSec: number;
-      salt: BigNumber;
-    }
-
-    export interface IZeroExOrder {
-      maker: string;
-      taker: string;
-      makerFee: BigNumber;
-      takerFee: BigNumber;
-      makerTokenAmount: BigNumber;
-      takerTokenAmount: BigNumber;
-      makerTokenAddress: string;
-      takerTokenAddress: string;
-      salt: BigNumber;
-      exchangeContractAddress: string;
-      feeRecipient: string;
-      expirationUnixTimestampSec: BigNumber;
-    }
-
-    export interface IZeroExSignedOrder extends IZeroExOrder {
-      ecSignature: Api.IEcSignature;
-    }
-
-    export const signOrder = async (zeroEx: ZeroEx, params: ISignOrderParams, shouldAddPersonalMessagePrefix = false): Promise<Aqueduct.Api.IStandardOrderCreationRequest> => {
-      const order: IZeroExOrder = {
-        maker: params.maker,
-        taker: params.taker,
-        makerFee: params.makerFee,
-        takerFee: params.takerFee,
-        makerTokenAmount: params.makerTokenAmount,
-        takerTokenAmount: params.takerTokenAmount,
-        makerTokenAddress: params.makerTokenAddress,
-        takerTokenAddress: params.takerTokenAddress as string,
-        salt: params.salt,
-        exchangeContractAddress: params.exchangeContractAddress,
-        feeRecipient: params.feeRecipient,
-        expirationUnixTimestampSec: new BigNumber(params.expirationUnixTimestampSec)
-      };
-
-      const orderHash = ZeroEx.getOrderHashHex(order);
-      const ecSignature = await zeroEx.signOrderHashAsync(orderHash, params.maker, shouldAddPersonalMessagePrefix);
-
-      return {
-        maker: params.maker,
-        taker: order.taker,
-        makerFee: params.makerFee.toString(),
-        takerFee: params.takerFee.toString(),
-        makerTokenAmount: params.makerTokenAmount.toString(),
-        takerTokenAmount: params.takerTokenAmount.toString(),
-        makerTokenAddress: params.makerTokenAddress,
-        takerTokenAddress: params.takerTokenAddress,
-        salt: order.salt.toString(),
-        exchangeContractAddress: params.exchangeContractAddress,
-        feeRecipient: params.feeRecipient,
-        expirationUnixTimestampSec: order.expirationUnixTimestampSec.toString(),
-        ecSignature
-      };
-    };
-
-    export const convertStandardOrderToSignedOrder = (order: Aqueduct.Api.IStandardOrder): IZeroExSignedOrder => {
-      return {
-        ecSignature: order.ecSignature,
-        exchangeContractAddress: order.exchangeContractAddress,
-        expirationUnixTimestampSec: new BigNumber(order.expirationUnixTimestampSec),
-        feeRecipient: order.feeRecipient,
-        maker: order.maker,
-        makerFee: new BigNumber(order.makerFee),
-        makerTokenAddress: order.makerTokenAddress,
-        makerTokenAmount: new BigNumber(order.makerTokenAmount),
-        salt: new BigNumber(order.salt),
-        taker: order.taker,
-        takerFee: new BigNumber(order.takerFee),
-        takerTokenAddress: order.takerTokenAddress,
-        takerTokenAmount: new BigNumber(order.takerTokenAmount)
-      };
-    };
-
-    export const convertOrderToSignedOrder = (order: Aqueduct.Api.Order): IZeroExSignedOrder => {
-      return {
-        ecSignature: JSON.parse(order.serializedEcSignature),
-        exchangeContractAddress: order.exchangeContractAddress,
-        expirationUnixTimestampSec: new BigNumber(order.expirationUnixTimestampSec),
-        feeRecipient: order.feeRecipient,
-        maker: order.maker,
-        makerFee: new BigNumber(order.makerFee),
-        makerTokenAddress: order.makerTokenAddress,
-        makerTokenAmount: new BigNumber(order.makerTokenAmount),
-        salt: new BigNumber(order.salt),
-        taker: order.taker,
-        takerFee: new BigNumber(order.takerFee),
-        takerTokenAddress: order.takerTokenAddress,
-        takerTokenAmount: new BigNumber(order.takerTokenAmount)
-      };
-    };
-
-    export const Tokens: TokenCache = tokenCache;
-  }
 }
 `);
 
@@ -551,7 +437,9 @@ const getTemplateView = (swagger: Swagger.ISpec, eventSchema: IEventsSchema): IT
         .filter(operationKey => methods.find(m => m === operationKey))
         .forEach(operationKey => {
           const operation = (path as any)[operationKey] as Swagger.IOperation;
-          if (!operation.operationId || !operation.tags) { throw new Error(); }
+          if (!operation.operationId || !operation.tags) {
+            throw new Error();
+          }
 
           const tag = operation.tags[0];
           const service = serviceMap[tag] = serviceMap[tag] || { name: `${tag}Service`, operations: [] };
@@ -638,7 +526,6 @@ const getTemplateView = (swagger: Swagger.ISpec, eventSchema: IEventsSchema): IT
 
       const properties = definition.properties;
       if (!properties) {
-        console.log(definition);
         throw new Error('No definition properties found.');
       }
 
@@ -694,7 +581,7 @@ const replaceAll = (value: string, pattern: string, replacement: string) => {
 
   try {
     const compiled = template(eventModelContent)(getTemplateView(spec, eventSchema));
-    fs.writeFileSync(`${__dirname}/src/generated/aqueduct.ts`, compiled);
+    fs.writeFileSync(`${__dirname}/src/generated/ercdex.ts`, compiled);
     console.log('Api file generated!');
   } catch (err) {
     console.log(err);

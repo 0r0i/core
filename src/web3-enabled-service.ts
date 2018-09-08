@@ -1,39 +1,26 @@
-import { ZeroEx } from '0x.js/lib/src/0x';
-import * as Web3 from 'web3';
+import { ContractWrappers, ExchangeWrapper } from '@0xproject/contract-wrappers';
+import { Provider, Web3Wrapper } from '@0xproject/web3-wrapper';
 
 export abstract class Web3EnabledService<T> {
-  protected networkId: number;
-  protected zeroEx: ZeroEx;
+  protected web3Wrapper: Web3Wrapper;
+  protected contractWrappers: ContractWrappers;
+  protected exchangeWrapper: ExchangeWrapper;
 
-  constructor(protected readonly web3: Web3) { }
+  constructor(protected readonly provider: Provider) {
+    if (!provider) { throw new Error('no provider provided'); }
+
+    this.web3Wrapper = new Web3Wrapper(provider);
+  }
 
   public async execute() {
-    try {
-      this.networkId = await this.getNetworkId();
-    } catch (err) {
-      console.error('failed to get network ID...');
-      throw err;
-    }
+    const networkId = await this.web3Wrapper.getNetworkIdAsync();
 
-    this.zeroEx = new ZeroEx(this.web3.currentProvider, {
-      networkId: this.networkId
-    });
+    this.contractWrappers = new ContractWrappers(this.web3Wrapper.getProvider(), { networkId });
+    this.exchangeWrapper = new ExchangeWrapper(this.web3Wrapper, networkId,
+      this.contractWrappers.erc20Token, this.contractWrappers.erc721Token);
 
     return await this.run();
   }
 
   protected abstract run(): Promise<T>;
-
-  private getNetworkId() {
-    return new Promise<number>((resolve, reject) => {
-      this.web3.version.getNetwork((err, networkId) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        resolve(parseInt(networkId, 10));
-      });
-    });
-  }
 }
