@@ -5,6 +5,22 @@ import {
 import { Order } from '@0xproject/types';
 import { BigNumber } from '@0xproject/utils';
 
+export interface ISignOrderParams {
+  provider: Provider;
+  makerAddress: string;
+  makerAssetAddress: string;
+  takerAssetAddress: string;
+  senderAddress: string;
+  exchangeAddress: string;
+  feeRecipientAddress: string;
+  makerAssetAmount: BigNumber;
+  takerAssetAmount: BigNumber;
+  makerFee: BigNumber;
+  takerFee: BigNumber;
+  expirationTimeSeconds: BigNumber;
+  signerType: SignerType;
+}
+
 export const SigningUtils = {
   async signMessageAsync(
     provider: Provider,
@@ -27,21 +43,7 @@ export const SigningUtils = {
       signerType
     );
   },
-  async signOrder(params: {
-    provider: Provider,
-    makerAddress: string,
-    makerAssetAddress: string,
-    takerAssetAddress: string,
-    senderAddress: string,
-    exchangeAddress: string,
-    feeRecipientAddress: string,
-    makerAssetAmount: BigNumber,
-    takerAssetAmount: BigNumber,
-    makerFee: BigNumber,
-    takerFee: BigNumber,
-    expirationTimeSeconds: BigNumber,
-    signerType: SignerType
-  }) {
+  async signOrder(params: ISignOrderParams) {
     const {
       makerAddress, makerAssetAddress, takerAssetAddress, senderAddress,
       exchangeAddress, feeRecipientAddress, makerAssetAmount, takerAssetAmount,

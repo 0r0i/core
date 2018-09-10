@@ -32,11 +32,10 @@ export class TokenCache {
       return await this.tokenPairsPromise;
     }
 
-    const promise = this.tokenPairsPromise = (async () => {
-      const result = await new ErcDex.Api.AssetPairsService().get({ perPage: 200 });
+    return this.tokenPairsPromise = (async () => {
+      const result = await new ErcDex.Api.AssetPairsService().get({ perPage: 200, page: 1 });
       return result.records;
     })();
-    return await promise;
   }
 
   private async getTokenMap() {
