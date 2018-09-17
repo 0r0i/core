@@ -591,16 +591,10 @@ Filled (2), Expired(3), Removed(4)
        * Receipt status: success | error | pending
        */
       status: string;
-      side: string;
-      takerAmount: string;
-      makerAmount: string;
-      price: string;
       baseAssetAddress: string;
       baseSymbol: string;
       quoteSymbol: string;
       quoteAssetAddress: string;
-      feeAmount: string;
-      feeAssetAddress: string;
       logs?: FillReceiptLog[];
     }
 
@@ -619,8 +613,11 @@ Filled (2), Expired(3), Removed(4)
       dateUpdated: Date;
       orderId: number;
       receiptId: number;
-      takerAmount: string;
       makerAddress: string;
+      side: string;
+      takerAmount: string;
+      makerAmount: string;
+      price: string;
       isFeeOrder: boolean;
       receipt?: FillReceipt;
     }
@@ -2076,16 +2073,10 @@ export interface FillReceipt {
    * Receipt status: success | error | pending
    */
   status: ("error" | "pending" | "success");
-  side: ("buy" | "sell");
-  takerAmount: string;
-  makerAmount: string;
-  price: string;
   baseAssetAddress: string;
   baseSymbol: string;
   quoteSymbol: string;
   quoteAssetAddress: string;
-  feeAmount: string;
-  feeAssetAddress: string;
   logs?: FillReceiptLog[];
   /**
    * Unique Identifier
@@ -2104,8 +2095,11 @@ export interface FillReceipt {
 export interface FillReceiptLog {
   orderId: number;
   receiptId: number;
-  takerAmount: string;
   makerAddress: string;
+  side: ("buy" | "sell");
+  takerAmount: string;
+  makerAmount: string;
+  price: string;
   isFeeOrder: boolean;
   receipt?: FillReceipt;
   /**
