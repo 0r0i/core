@@ -1232,7 +1232,7 @@ Filled (2), Expired(3), Removed(4)
       public async get(params: IAggregatedOrdersGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/aggregated_orders`
+          url: `${baseApiUrl}/api/v2/aggregated_orders`
         };
 
         requestParams.queryParameters = {
@@ -1259,7 +1259,7 @@ Filled (2), Expired(3), Removed(4)
       public async get(params: IAssetPairsGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/asset_pairs`
+          url: `${baseApiUrl}/api/v2/asset_pairs`
         };
 
         requestParams.queryParameters = {
@@ -1296,7 +1296,7 @@ Filled (2), Expired(3), Removed(4)
       public async getSupportedNetwork(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/networks`
+          url: `${baseApiUrl}/api/v2/networks`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<INetwork>(requestParams, headers);
@@ -1308,7 +1308,7 @@ Filled (2), Expired(3), Removed(4)
       public async isMaintenance(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/networks/maintenance`
+          url: `${baseApiUrl}/api/v2/networks/maintenance`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IMaintenanceStatus>(requestParams, headers);
@@ -1320,7 +1320,7 @@ Filled (2), Expired(3), Removed(4)
       public async getBulkTokenContract(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/networks/bulk_token_contract`
+          url: `${baseApiUrl}/api/v2/networks/bulk_token_contract`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<string>(requestParams, headers);
@@ -1338,7 +1338,7 @@ Filled (2), Expired(3), Removed(4)
       public async getCryptoPanic(params: INewsGetCryptoPanicParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/news/cryptopanic/${params.symbol}`
+          url: `${baseApiUrl}/api/v2/news/cryptopanic/${params.symbol}`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<ICryptoPanicPostsResponse>(requestParams, headers);
@@ -1347,7 +1347,7 @@ Filled (2), Expired(3), Removed(4)
       public async getErcDex(params: INewsGetErcDexParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/news/ercdex`
+          url: `${baseApiUrl}/api/v2/news/ercdex`
         };
 
         requestParams.queryParameters = {
@@ -1374,7 +1374,7 @@ Filled (2), Expired(3), Removed(4)
       public async get(params: INotificationsGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/notifications`
+          url: `${baseApiUrl}/api/v2/notifications`
         };
 
         requestParams.queryParameters = {
@@ -1421,7 +1421,7 @@ Filled (2), Expired(3), Removed(4)
       public async createOrder(params: IOrdersCreateOrderParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'POST',
-          url: `${baseApiUrl}/api/v1/orders`
+          url: `${baseApiUrl}/api/v2/order`
         };
 
         requestParams.body = params.request;
@@ -1435,7 +1435,7 @@ Filled (2), Expired(3), Removed(4)
       public async get(params: IOrdersGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/orders`
+          url: `${baseApiUrl}/api/v2/orders`
         };
 
         requestParams.queryParameters = {
@@ -1467,7 +1467,7 @@ Filled (2), Expired(3), Removed(4)
       public async getOrderByHash(params: IOrdersGetOrderByHashParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/order/${params.orderHash}`
+          url: `${baseApiUrl}/api/v2/order/${params.orderHash}`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IOrderData>(requestParams, headers);
@@ -1476,7 +1476,7 @@ Filled (2), Expired(3), Removed(4)
       public async getOrderConfig(params: IOrdersGetOrderConfigParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/order_config`
+          url: `${baseApiUrl}/api/v2/order_config`
         };
 
         requestParams.queryParameters = {
@@ -1495,7 +1495,7 @@ Filled (2), Expired(3), Removed(4)
       public async getFeeRecipients(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/fee_recipients`
+          url: `${baseApiUrl}/api/v2/fee_recipients`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IFeeRecipientsResponse>(requestParams, headers);
@@ -1504,7 +1504,7 @@ Filled (2), Expired(3), Removed(4)
       public async getOrderbook(params: IOrdersGetOrderbookParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/orderbook`
+          url: `${baseApiUrl}/api/v2/orderbook`
         };
 
         requestParams.queryParameters = {
@@ -1523,7 +1523,7 @@ Filled (2), Expired(3), Removed(4)
       public async cancel(params: IOrdersCancelParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'POST',
-          url: `${baseApiUrl}/api/v1/orders/cancel`
+          url: `${baseApiUrl}/api/v2/orders/cancel`
         };
 
         requestParams.body = params.request;
@@ -1541,7 +1541,7 @@ Filled (2), Expired(3), Removed(4)
       public async getTickerData(headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/reports/ticker`
+          url: `${baseApiUrl}/api/v2/reports/ticker`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<ITokenTicker[]>(requestParams, headers);
@@ -1557,7 +1557,7 @@ Filled (2), Expired(3), Removed(4)
       public async get(params: ITickerGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/ticker`
+          url: `${baseApiUrl}/api/v2/ticker`
         };
 
         requestParams.queryParameters = {
@@ -1577,7 +1577,7 @@ Filled (2), Expired(3), Removed(4)
       public async create(params: ITokenRequestCreateParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'POST',
-          url: `${baseApiUrl}/api/v1/token_requests`
+          url: `${baseApiUrl}/api/v2/token_requests`
         };
 
         requestParams.body = params.request;
@@ -1623,7 +1623,7 @@ Filled (2), Expired(3), Removed(4)
       public async fill(params: ITradeFillParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'POST',
-          url: `${baseApiUrl}/api/v1/trade/fill`
+          url: `${baseApiUrl}/api/v2/trade/fill`
         };
 
         requestParams.body = params.request;
@@ -1637,7 +1637,7 @@ Filled (2), Expired(3), Removed(4)
       public async requestFill(params: ITradeRequestFillParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'POST',
-          url: `${baseApiUrl}/api/v1/trade/request_fill`
+          url: `${baseApiUrl}/api/v2/trade/request_fill`
         };
 
         requestParams.body = params.request;
@@ -1651,7 +1651,7 @@ Filled (2), Expired(3), Removed(4)
       public async getMarketQuote(params: ITradeGetMarketQuoteParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'POST',
-          url: `${baseApiUrl}/api/v1/trade/market_quote`
+          url: `${baseApiUrl}/api/v2/trade/market_quote`
         };
 
         requestParams.body = params.request;
@@ -1665,7 +1665,7 @@ Filled (2), Expired(3), Removed(4)
       public async getMarketQuoteByPercent(params: ITradeGetMarketQuoteByPercentParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'POST',
-          url: `${baseApiUrl}/api/v1/trade/market_quote_by_percent`
+          url: `${baseApiUrl}/api/v2/trade/market_quote_by_percent`
         };
 
         requestParams.body = params.request;
@@ -1679,7 +1679,7 @@ Filled (2), Expired(3), Removed(4)
       public async getReceipt(params: ITradeGetReceiptParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/trade/receipt/${params.id}`
+          url: `${baseApiUrl}/api/v2/trade/receipt/${params.id}`
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<FillReceipt>(requestParams, headers);
@@ -1688,7 +1688,7 @@ Filled (2), Expired(3), Removed(4)
       public async getReceipts(params: ITradeGetReceiptsParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/trade/receipts`
+          url: `${baseApiUrl}/api/v2/trade/receipts`
         };
 
         requestParams.queryParameters = {
@@ -1711,7 +1711,7 @@ Filled (2), Expired(3), Removed(4)
       public async getLogs(params: ITradingViewGetLogsParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/trading_view`
+          url: `${baseApiUrl}/api/v2/trading_view`
         };
 
         requestParams.queryParameters = {
@@ -1734,7 +1734,7 @@ Filled (2), Expired(3), Removed(4)
       public async get(params: ITradeHistoryLogsGetParams, headers?: IAdditionalHeaders) {
         const requestParams: IRequestParams = {
           method: 'GET',
-          url: `${baseApiUrl}/api/v1/trade_history_logs`
+          url: `${baseApiUrl}/api/v2/trade_history_logs`
         };
 
         requestParams.queryParameters = {
