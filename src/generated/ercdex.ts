@@ -983,6 +983,10 @@ Filled (2), Expired(3), Removed(4)
       request: IOrderCreationRequest;
     }
 
+    export interface IOrdersGetOrderByIdParams {
+      orderId: number;
+    }
+
     export interface IOrdersGetParams {
       /**
        * Include orders that are open; if false, only closed orders are returned
@@ -1127,6 +1131,11 @@ Filled (2), Expired(3), Removed(4)
        * The token pair in the format BASE/QUOTE, e.g. ZRX/WETH
        */
       pair?: string;
+      /**
+       * Optionally provide wallet address of order maker
+       */
+      maker_address?: string;
+      orderId?: number;
     }
 
     export interface ITradingViewGetLogsParams {
@@ -1392,6 +1401,11 @@ Filled (2), Expired(3), Removed(4)
       createOrder(params: IOrdersCreateOrderParams, headers?: IAdditionalHeaders): Promise<Order>;
 
       /**
+       * Get a single order by ID
+       */
+      getOrderById(params: IOrdersGetOrderByIdParams, headers?: IAdditionalHeaders): Promise<IOrderData>;
+
+      /**
        * Get a list of orders
        */
       get(params: IOrdersGetParams, headers?: IAdditionalHeaders): Promise<IGetOrdersResponse>;
@@ -1427,6 +1441,22 @@ Filled (2), Expired(3), Removed(4)
         requestParams.body = params.request;
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<Order>(requestParams, headers);
+      }
+
+      /**
+       * Get a single order by ID
+       */
+      public async getOrderById(params: IOrdersGetOrderByIdParams, headers?: IAdditionalHeaders) {
+        const requestParams: IRequestParams = {
+          method: 'GET',
+          url: `${baseApiUrl}/api/v2/order`
+        };
+
+        requestParams.queryParameters = {
+          orderId: params.orderId,
+        };
+        requestParams.apiKeyId = apiKeyId;
+        return this.executeRequest<IOrderData>(requestParams, headers);
       }
 
       /**
@@ -1696,6 +1726,8 @@ Filled (2), Expired(3), Removed(4)
           perPage: params.perPage,
           taker_address: params.taker_address,
           pair: params.pair,
+          maker_address: params.maker_address,
+          orderId: params.orderId,
         };
         requestParams.apiKeyId = apiKeyId;
         return this.executeRequest<IGetReceiptsResponse>(requestParams, headers);
