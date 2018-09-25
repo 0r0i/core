@@ -111,7 +111,7 @@ export namespace ErcDex {
   /**
    * Initialize the Aqueduct client. Required to use the client.
    */
-  export const Initialize = (params?: { host?: string; apiKeyId?: string; }) => {
+  export const Initialize = (params?: { host?: string; apiKeyId?: string; clientId?: string; }) => {
     const hasProcess = typeof process !== 'undefined' && process.env;
     const host = (params && params.host) || (hasProcess && process.env.AQUEDUCT_HOST) || 'app.ercdex.com';
     baseApiUrl = \`https://\${host}\`;
@@ -129,7 +129,11 @@ export namespace ErcDex {
       return;
     }
 
-    socket = new ReconnectingWebsocket(\`wss:\${host}\` + '/ws', undefined);
+    let wsEndpoint = \`wss:\${host}\` + '/ws';
+    if (params && params.clientId) {
+      wsEndpoint += '?client_id=' + params.clientId;
+    }
+    socket = new ReconnectingWebsocket(wsEndpoint, undefined);
 
     socket.onopen = () => {
       Object.keys(subscriptions).map(k => subscriptions[k]).forEach(s => {
