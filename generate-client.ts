@@ -73,10 +73,10 @@ if (!baseApiUrl) {
 
 const template = (eventModelContent: string) => handlebars.compile(`/* tslint:disable */
 import { ApiService, IAdditionalHeaders, IRequestParams } from '../api-service';
-const ReconnectingWebsocket = require('reconnecting-websocket');
+import ReconnectingWebsocket from 'reconnecting-websocket';
 
 export namespace ErcDex {
-  export let socket: WebSocket;
+  export let socket: ReconnectingWebsocket;
   let baseApiUrl: string;
   let apiKeyId: string | undefined;
   let hasWebSocket: boolean;
