@@ -730,6 +730,10 @@ Filled (2), Expired(3), Removed(4)
        */
       state: number;
       /**
+       * Desired trade speed: fast | standard
+       */
+      speed?: string;
+      /**
        * ID of order used to pay fees
        */
       feeOrderId?: number;
@@ -763,6 +767,11 @@ Filled (2), Expired(3), Removed(4)
        * Collection of trade requests
        */
       fills: IOrderFill[];
+      /**
+       * Desired trade speed; faster speed will incur higher fees
+Options: fast (default) | standard
+       */
+      speed?: string;
     }
 
     export interface IMarketOrderQuote {
@@ -790,6 +799,11 @@ Filled (2), Expired(3), Removed(4)
        * Quantity in wei of base token to buy/sell
        */
       quantity: string;
+      /**
+       * Desired trade speed
+Options: fast (default) | standard
+       */
+      speed?: string;
     }
 
     export interface IGetMarketOrderQuoteByPercentageRequest {
@@ -809,6 +823,11 @@ Filled (2), Expired(3), Removed(4)
        * Percentage (integer, 1-100)
        */
       percentage: number;
+      /**
+       * Desired trade speed
+Options: fast (default) | standard
+       */
+      speed?: string;
     }
 
     export interface IGetReceiptsResponse {
@@ -2233,6 +2252,10 @@ export interface MarketQuote {
    * State of the quote (Open [0], Expired [1], Invalid [2], Redeemed [3])
    */
   state: number;
+  /**
+   * Desired trade speed: fast | standard
+   */
+  speed?: string;
   /**
    * ID of order used to pay fees
    */
